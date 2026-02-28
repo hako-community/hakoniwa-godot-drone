@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "header",
+      "type": "ServiceResponseHeader"
+    },
+    {
+      "name": "body",
+      "type": "AddTwoIntsResponse"
+    }
+  ]
+}

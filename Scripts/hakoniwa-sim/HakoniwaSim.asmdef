@@ -1,0 +1,16 @@
+{
+    "name": "HakoniwaSim",
+    "rootNamespace": "",
+    "references": [
+        "GUID:56f2e4155fcd24d2f95ff48be3b027c7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

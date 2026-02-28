@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "a",
+      "type": "int64"
+    },
+    {
+      "name": "b",
+      "type": "int64"
+    }
+  ]
+}

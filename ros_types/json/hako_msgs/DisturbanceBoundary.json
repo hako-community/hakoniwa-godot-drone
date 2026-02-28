@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "boundary_point",
+      "type": "geometry_msgs/Point"
+    },
+    {
+      "name": "boundary_normal",
+      "type": "geometry_msgs/Vector3"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+    "name": "HakoniwaPdu",
+    "references": [
+        "endel.nativewebsocket",
+		"Newtonsoft.Json"
+    ]
+}

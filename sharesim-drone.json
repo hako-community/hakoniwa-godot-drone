@@ -1,0 +1,204 @@
+{
+    "robots": [
+        {
+            "name": "Baggage1",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "hako_msgs/ShareObjectOwner",
+                    "org_name": "owner",
+                    "name": "Baggage1_owner",
+                    "channel_id": 0,
+                    "pdu_size": 216,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Drone1",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "hako_mavlink_msgs/HakoHilActuatorControls",
+                    "org_name": "motor",
+                    "name": "Drone1_motor",
+                    "channel_id": 0,
+                    "pdu_size": 112,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                },
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Drone1_pos",
+                    "channel_id": 1,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": [
+            ]
+        },
+        {
+            "name": "Drone2",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "hako_mavlink_msgs/HakoHilActuatorControls",
+                    "org_name": "motor",
+                    "name": "Drone2_motor",
+                    "channel_id": 0,
+                    "pdu_size": 112,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                },
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Drone2_pos",
+                    "channel_id": 1,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": [
+            ]
+        },
+        {
+            "name": "Player1_head",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player1_head_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Player1_left_hand",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player1_left_hand_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Player1_right_hand",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player1_right_hand_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Player2_head",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player2_head_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Player2_left_hand",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player2_left_hand_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "Player2_right_hand",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "geometry_msgs/Twist",
+                    "org_name": "pos",
+                    "name": "Player2_right_hand_pos",
+                    "channel_id": 0,
+                    "pdu_size": 72,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": []
+        },
+        {
+            "name": "ShareSim",
+            "rpc_pdu_readers": [],
+            "rpc_pdu_writers": [],
+            "shm_pdu_readers": [
+                {
+                    "type": "hako_msgs/ShareObjectOwnerRequest",
+                    "org_name": "req",
+                    "name": "ShareSim_req",
+                    "channel_id": 0,
+                    "pdu_size": 168,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ],
+            "shm_pdu_writers": [
+                {
+                    "type": "hako_msgs/SimTime",
+                    "org_name": "core_time",
+                    "name": "ShareSim_core_time",
+                    "channel_id": 1,
+                    "pdu_size": 32,
+                    "write_cycle": 1,
+                    "method_type": "SHM"
+                }
+            ]
+        }
+    ]
+}

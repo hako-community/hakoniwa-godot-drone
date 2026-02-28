@@ -1,0 +1,8 @@
+{
+  "fields": [
+    {
+      "name": "sum",
+      "type": "int64"
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+using hakoniwa.ar.bridge.sharesim;
+using hakoniwa.objects.core;
+using hakoniwa.pdu.interfaces;
+using hakoniwa.pdu.msgs.hako_msgs;
+using System.Threading.Tasks;
+using Godot;
+
+namespace hakoniwa.ar.bridge.sharesim
+{
+    public partial class BaggageGrabber : Node
+    {
+        public enum GrabResult
+        {
+            Success,          // 取得成功
+            AlreadyRequesting, // すでにリクエスト中
+            Timeout,          // タイムアウト
+            OwnershipLost,    // 他のロボットに取られた
+            NoBaggage,        // 近くに荷物がなかった
+            FailedToGrab      // 掴むのに失敗
+        }
+        public enum ReleaseResult
+        {
+            Success,         // リリース成功
+            NoBaggage,       // リリースする荷物がない
+            ShareSimClientStopped,
+            FlushFailed      // FlushNamedPdu 失敗
+        }
+
+        private Baggage currentBaggage = null;
+        private uint requestOwnerId;
+        private Magnet magnet;
+        private float requestStartTime;
+        public float timeoutDuration = 5.0f; // タイムアウト時間（秒）
+
+        private void Start()
+        {
+//            magnet = FindComponent<Magnet>(this);
+            magnet = FindNodeByInterface<Magnet>(this);
+            if (magnet == null)
+            {
+                throw new System.Exception("Can not find magnet on " + this.Name);
+            }
+            currentBaggage = null;
+        }
+
+        private T FindComponent<T>(Node node) where T : class
+        {
+            if (node is T found) return found;
+            foreach (Node child in node.GetChildren())
+            {
+                var result = FindComponent<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        public T FindNodeByInterface<T>(Node root) where T : class
+        {
+            if (root is T found) return found;
+
+            foreach (Node child in root.GetChildren())
+            {
+                var result = FindNodeByInterface<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private async Task<Baggage> RequestGrabAsync(uint owner_id, IPduManager pduManager)
+        {
+            if (currentBaggage != null)
+            {
+                GD.Print("already requesting.");
+                return currentBaggage;
+            }
+
+            // Find Baggage
+            currentBaggage = this.magnet.FindNearestBaggage();
+            if (currentBaggage == null)
+            {
+                GD.Print("not find nearest baggage");
+                return null;
+            }
+            requestOwnerId = owner_id;
+//            requestStartTime = Time.time;
+            requestStartTime = Time.GetTicksMsec() / 1000.0f;
+
+            INamedPdu npdu = pduManager.CreateNamedPdu(ShareSimServer.robotName, ShareSimServer.pduRequest);
+            if (npdu == null)
+            {
+                throw new System.Exception($"Can not find npdu: {ShareSimServer.robotName} / {ShareSimServer.pduRequest}");
+            }
+
+            ShareObjectOwnerRequest req = new ShareObjectOwnerRequest(npdu.Pdu);
+            req.object_name = currentBaggage.Name;
+            req.request_type = (uint)ShareObjectOwnerRequestType.Acquire;
+            req.new_owner_id = owner_id;
+            req.request_time = (uint)(requestStartTime * 1000);
+            GD.Print("object_name: " + req.object_name);
+            pduManager.WriteNamedPdu(npdu);
+            bool ret = await pduManager.FlushNamedPdu(npdu);
+            if (!ret)
+            {
+                GD.PrintErr($"FlushNamedPdu failed for {ShareSimServer.robotName} / {ShareSimServer.pduRequest}");
+            }
+            return currentBaggage;
+        }
+
+        private uint GetCurrentTargetOwner(Baggage baggage)
+        {
+            return ShareSimClient.Instance.GetTargetOwnerId(baggage.Name);
+        }
+
+        private bool Grab()
+        {
+            if (currentBaggage == null)
+            {
+                GD.PrintErr("Attempted to grab with no requesting baggage.");
+                return false;
+            }
+
+            bool ret = this.magnet.TurnOn(currentBaggage);
+            if (!ret)
+            {
+                GD.PrintErr("Failed to grab baggage.");
+                return false;
+            }
+            return true;
+        }
+
+        private bool IsTimeout()
+        {
+            if (currentBaggage == null)
+            {
+                return false;
+            }
+            return (Time.GetTicksMsec() / 1000.0f - requestStartTime) > timeoutDuration;
+        }
+
+        public async Task<GrabResult> RequestGrab(uint owner_id, IPduManager pduManager)
+        {
+            // すでにリクエスト中なら即座に `AlreadyRequesting` を返す
+            if (currentBaggage != null)
+            {
+                GD.PushWarning("Already requesting baggage. Ignoring new request.");
+                return GrabResult.AlreadyRequesting;
+            }
+
+            GD.Print("Starting new grab request...");
+            currentBaggage = await RequestGrabAsync(owner_id, pduManager);
+            if (currentBaggage == null)
+            {
+                GD.PushWarning("No baggage found to grab.");
+                return GrabResult.NoBaggage;
+            }
+
+            // 所有権取得を待つ
+            while (currentBaggage != null)
+            {
+                if (IsTimeout())
+                {
+                    GD.PushWarning("Ownership request timed out!");
+                    currentBaggage = null;
+                    return GrabResult.Timeout;
+                }
+
+                uint owner_id_now = GetCurrentTargetOwner(currentBaggage);
+                if (owner_id_now == uint.MaxValue)
+                {
+                    GD.PushWarning("Failed to retrieve owner information.");
+                    throw new System.Exception("Invalid share object: " + currentBaggage.Name);
+                }
+
+                if (owner_id_now == requestOwnerId)
+                {
+                    GD.Print("get owner: " + owner_id_now);
+                    break; // 所有権獲得
+                }
+                else if (owner_id_now != ShareSimServer.owner_id)
+                {
+                    GD.PushWarning("Another robot took ownership!");
+                    currentBaggage = null;
+                    return GrabResult.OwnershipLost;
+                }
+                GD.Print("wait for a while... : owner_id " + owner_id_now);
+                await Task.Delay(100); // 次のチェックまで少し待機
+            }
+
+            // 所有権を獲得したので Grab を試行
+            bool success = Grab();
+            if (success)
+            {
+                GD.Print("Successfully grabbed baggage!");
+                return GrabResult.Success;
+            }
+            else
+            {
+                return GrabResult.FailedToGrab; // 失敗時の結果を明確化
+            }
+        }
+        public async Task<ReleaseResult> RequestRelease(uint owner_id, IPduManager pduManager)
+        {
+            if (currentBaggage == null)
+            {
+                GD.PushWarning("No baggage to release.");
+                return ReleaseResult.NoBaggage;
+            }
+
+            INamedPdu npdu = pduManager.CreateNamedPdu(ShareSimServer.robotName, ShareSimServer.pduRequest);
+            if (npdu == null)
+            {
+                throw new System.Exception($"Can not find npdu: {ShareSimServer.robotName} / {ShareSimServer.pduRequest}");
+            }
+
+            ShareObjectOwnerRequest req = new ShareObjectOwnerRequest(npdu.Pdu);
+            req.object_name = currentBaggage.Name;
+            req.request_type = (uint)ShareObjectOwnerRequestType.Release;
+            req.new_owner_id = ShareSimServer.owner_id;
+            req.request_time = (uint)(Time.GetTicksMsec() / 1000.0f * 1000); // 正しいリクエスト時間を設定
+
+            pduManager.WriteNamedPdu(npdu);
+            bool ret = await pduManager.FlushNamedPdu(npdu);
+
+            if (!ret)
+            {
+                GD.PrintErr($"FlushNamedPdu failed for {ShareSimServer.robotName} / {ShareSimServer.pduRequest}");
+                return ReleaseResult.FlushFailed;
+            }
+
+            currentBaggage = null;
+            this.magnet.TurnOff();
+
+            while (true)
+            {
+                if (ShareSimClient.Instance == null)
+                {
+                    GD.PushWarning("Already ShareSimClient is released....");
+                    return ReleaseResult.ShareSimClientStopped;
+                }
+                var current_owner_id = ShareSimClient.Instance.GetTargetOwnerId(req.object_name);
+                if (current_owner_id != ShareSimClient.Instance.my_owner_id)
+                {
+                    GD.Print($"Released: current owner is {current_owner_id}");
+                    break;
+                }
+                else
+                {
+                    GD.Print($"wait for Released: current owner is {current_owner_id}");
+                }
+                GD.Print("wait for a while... for release.");
+                await Task.Delay(100); // 次のチェックまで少し待機
+            }
+            GD.Print($"Successfully released {req.object_name}");
+
+            return ReleaseResult.Success;
+        }
+
+    }
+}

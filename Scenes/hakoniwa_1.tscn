@@ -1,0 +1,710 @@
+[gd_scene load_steps=61 format=3 uid="uid://csffj5ulmehd8"]
+
+[ext_resource type="Script" uid="uid://bi7xlqcvlqkpu" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_gbdt5"]
+[ext_resource type="Script" uid="uid://c2np2chmdjnds" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_b7pws"]
+[ext_resource type="Script" uid="uid://cp4v3xue2w0tx" path="res://Scripts/Drone/DroneCollision.cs" id="3_dxre5"]
+[ext_resource type="Script" uid="uid://e5jjjk5wiedi" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="4_3dyd2"]
+[ext_resource type="Script" uid="uid://bnytvp15laood" path="res://Scripts/Unity/Sensors/LiDAR/Default3DLiDARController.cs" id="5_e8cb3"]
+[ext_resource type="Script" uid="uid://cd6nsdw3fnbq0" path="res://Scripts/Drone/DronePropeller.cs" id="6_gfuh5"]
+[ext_resource type="PackedScene" uid="uid://bjgko0tors2j8" path="res://Models/propeller.glb" id="7_aqafc"]
+[ext_resource type="PackedScene" uid="uid://cw5a8437yo2jt" path="res://Models/dji_avatar2.glb" id="8_0j742"]
+[ext_resource type="Script" uid="uid://bqbnmnfp7aoyr" path="res://Scripts/Hakoniwa/HakoSim/Drone/BaggageGrabber.cs" id="9_i4ev6"]
+[ext_resource type="Script" uid="uid://c67yo40ut53mq" path="res://Scripts/Unity/Baggage/Magnet.cs" id="10_oxpj0"]
+[ext_resource type="Script" uid="uid://s3qsyo8qv8qa" path="res://Scripts/Drone/DroneConfig.cs" id="11_bb4ut"]
+[ext_resource type="PackedScene" uid="uid://oycjxuiuwps0" path="res://Models/DroneCamera.glb" id="12_idqh5"]
+[ext_resource type="Script" uid="uid://rjbrx3thtsxt" path="res://Scripts/Unity/Sensors/Camera/DefaultCameraController.cs" id="13_5rb4j"]
+[ext_resource type="Script" uid="uid://c4g7wvet1d36v" path="res://Scripts/Hakoniwa/HakoSim/Drone/CameraController.cs" id="14_ox0gw"]
+[ext_resource type="Script" uid="uid://brafl0jav8h5n" path="res://Scripts/Hakoniwa/HakoSim/Drone/GameController.cs" id="15_vukou"]
+[ext_resource type="Material" uid="uid://be714h4dobqo" path="res://Materials/LED/RedOff.tres" id="16_5u3l5"]
+[ext_resource type="Script" uid="uid://dlf4oeacsdmoe" path="res://Scripts/Unity/DroneLedController.cs" id="17_n5fg8"]
+[ext_resource type="Material" uid="uid://31mtxr7r06o3" path="res://Materials/LED/Red.tres" id="18_l4phi"]
+[ext_resource type="Material" uid="uid://didpmfitwrcb0" path="res://Materials/LED/Green.tres" id="19_piv2x"]
+[ext_resource type="Material" uid="uid://u064ye5rlcbd" path="res://Materials/LED/Yellow.tres" id="20_yanwn"]
+[ext_resource type="Script" uid="uid://rcfj4kf6ddl7" path="res://Scripts/Unity/FlightModeLedController.cs" id="21_htewp"]
+[ext_resource type="Material" uid="uid://mbjha5aveaif" path="res://Materials/LED/Blue.tres" id="22_586ah"]
+[ext_resource type="Script" uid="uid://un08ftc63xci" path="res://Scripts/Hakoniwa/HakoSim/GUI/SimStart.cs" id="23_b8lrn"]
+[ext_resource type="Script" uid="uid://dv64ldej8mdqn" path="res://Scripts/Hakoniwa/HakoSim/GUI/SimTime.cs" id="24_rtoji"]
+[ext_resource type="Script" uid="uid://clk3twok3vup6" path="res://Scripts/Unity/GUI/DroneBatteryUI.cs" id="25_61e2k"]
+[ext_resource type="Texture2D" uid="uid://bx8lav364pf5a" path="res://Materials/Textures/batt_emp.png" id="26_kdru8"]
+[ext_resource type="Texture2D" uid="uid://breaxtx7arl6q" path="res://Materials/Textures/batt_full.png" id="27_o2gd7"]
+[ext_resource type="Script" uid="uid://cd2p5ojfy01ut" path="res://Scripts/Unity/GUI/DronePos.cs" id="28_mr38n"]
+[ext_resource type="Script" uid="uid://4ymnssatgsso" path="res://Scripts/Unity/GUI/DroneMapUI.cs" id="29_43wo4"]
+[ext_resource type="Texture2D" uid="uid://b0cqips05y5ug" path="res://Materials/Textures/MapBackGround.png" id="30_hi0jk"]
+[ext_resource type="Texture2D" uid="uid://ddc1rfmp1kw40" path="res://Materials/Textures/map.png" id="31_q14kd"]
+[ext_resource type="Texture2D" uid="uid://0yfta5krnmmp" path="res://Materials/Textures/direction.png" id="32_qa8oq"]
+[ext_resource type="Texture2D" uid="uid://72aokwurawr5" path="res://Materials/Textures/roll-fig.png" id="33_hikm3"]
+[ext_resource type="Texture2D" uid="uid://cukoimdo4hpqm" path="res://Materials/Textures/pitch.png" id="34_ofjvk"]
+[ext_resource type="Texture2D" uid="uid://cwiybh60ta4pi" path="res://Materials/Textures/pitch_.png" id="35_dncf7"]
+[ext_resource type="Script" uid="uid://7mryusmf6r72" path="res://Scripts/CameraGimbal.cs" id="36_v8m31"]
+[ext_resource type="Texture2D" uid="uid://dyon3s887exfw" path="res://Materials/Textures/target.png" id="37_bduti"]
+[ext_resource type="Texture2D" uid="uid://g7h5ub2aqoq7" path="res://Materials/Textures/baggage.png" id="38_m2fli"]
+[ext_resource type="Texture2D" uid="uid://bktlwwmk25e2d" path="res://Materials/Textures/godot_texture2.png" id="39_8ud2m"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_d0svw"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1csff"]
+size = Vector3(0.2, 0.05, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dt7ya"]
+albedo_color = Color(0.06879827, 0.06879828, 0.06879828, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fcpor"]
+material = SubResource("StandardMaterial3D_dt7ya")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ywsav"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1csff"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_dt7ya"]
+material = ExtResource("16_5u3l5")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flw6q"]
+albedo_color = Color(0.023698878, 0.22197717, 0.06324865, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_dt7ya"]
+material = SubResource("StandardMaterial3D_flw6q")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fcpor"]
+albedo_color = Color(0.8992584, 0.8992584, 0.8992584, 1)
+albedo_texture = ExtResource("38_m2fli")
+metallic = 0.45
+metallic_specular = 0.59
+roughness = 0.83
+uv1_scale = Vector3(3, 2, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ywsav"]
+material = SubResource("StandardMaterial3D_fcpor")
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dt7ya"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_am0b1"]
+albedo_color = Color(0.90650624, 0.59642535, 8.085966e-06, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_d3neh"]
+material = SubResource("StandardMaterial3D_am0b1")
+size = Vector3(0.7, 0.7, 0.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fcpor"]
+size = Vector3(0.7, 0.7, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ywsav"]
+albedo_color = Color(0.64048463, 0.64048463, 0.64048463, 1)
+albedo_texture = ExtResource("39_8ud2m")
+uv1_scale = Vector3(3, 2, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_am0b1"]
+material = SubResource("StandardMaterial3D_ywsav")
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d3neh"]
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fcpor"]
+
+[sub_resource type="Sky" id="Sky_ywsav"]
+sky_material = SubResource("ProceduralSkyMaterial_fcpor")
+
+[sub_resource type="Environment" id="Environment_am0b1"]
+background_mode = 2
+sky = SubResource("Sky_ywsav")
+
+[node name="hakoniwa_1" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4391567, 0.8322507)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.82253134, 0.5687198, 0, -0.5687198, 0.82253134, 0, 0, 0)
+light_color = Color(1, 1, 0.9372549, 1)
+shadow_enabled = true
+
+[node name="Hakoniwa" type="Node3D" parent="."]
+script = ExtResource("1_gbdt5")
+customJsonFilePath = "./avatar-drone.json"
+
+[node name="DRAvatar2" type="Node3D" parent="." node_paths=PackedStringArray("body", "rd", "droneCollisionNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051187024, 0)
+script = ExtResource("2_b7pws")
+body = NodePath("dji_avatar2")
+rd = NodePath("RigidBody3D")
+droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="DRAvatar2"]
+physics_material_override = SubResource("PhysicsMaterial_d0svw")
+contact_monitor = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DRAvatar2/RigidBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.00957296, -0.02317664)
+shape = SubResource("BoxShape3D_1csff")
+debug_color = Color(0.9222214, 0.048371576, 0.6714262, 0.41960785)
+script = ExtResource("3_dxre5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/RigidBody3D"]
+transform = Transform3D(0.5, 0, 0, 0, -1, -1.509958e-07, 0, 1.509958e-07, -1, 0, 0, 0)
+
+[node name="LiDAR" type="Node3D" parent="DRAvatar2"]
+script = ExtResource("4_3dyd2")
+
+[node name="sensor" type="Node3D" parent="DRAvatar2/LiDAR"]
+script = ExtResource("5_e8cb3")
+
+[node name="box" type="MeshInstance3D" parent="DRAvatar2/LiDAR"]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, -0.012109918, -0.11100012)
+mesh = SubResource("BoxMesh_fcpor")
+
+[node name="cylinder" type="MeshInstance3D" parent="DRAvatar2/LiDAR/box"]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, -0.47900963)
+mesh = SubResource("CylinderMesh_ywsav")
+
+[node name="Propellers" type="Node3D" parent="DRAvatar2" node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
+script = ExtResource("6_gfuh5")
+enableAudio = false
+maxRotationSpeed = 40000.0
+propeller1 = NodePath("propeller1")
+propeller2 = NodePath("propeller2")
+propeller3 = NodePath("propeller3")
+propeller4 = NodePath("propeller4")
+
+[node name="propeller1" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05889766, -0.010962147, -0.068796396)
+
+[node name="propeller2" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.059, -0.011, 0.022)
+
+[node name="propeller3" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.058, -0.011, -0.068)
+
+[node name="propeller4" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.059, -0.011, 0.022)
+
+[node name="dji_avatar2" parent="DRAvatar2" instance=ExtResource("8_0j742")]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+
+[node name="BaggageGrabber" type="Node3D" parent="DRAvatar2"]
+script = ExtResource("9_i4ev6")
+
+[node name="Magnet" type="Node3D" parent="DRAvatar2/BaggageGrabber" node_paths=PackedStringArray("magnetRenderer")]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, -0.0035444275, -0.03789684, 0)
+script = ExtResource("10_oxpj0")
+detectionRange = 1.0
+magnetRenderer = NodePath("MeshInstance3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/BaggageGrabber/Magnet"]
+transform = Transform3D(0.04, 0, 0, 0, 0.006, 0, 0, 0, 0.04, 0, -0.04105076, 0)
+mesh = SubResource("BoxMesh_1csff")
+
+[node name="DroneConfig" type="Node3D" parent="DRAvatar2"]
+script = ExtResource("11_bb4ut")
+
+[node name="DroneCamera" parent="DRAvatar2" instance=ExtResource("12_idqh5")]
+script = ExtResource("13_5rb4j")
+camera_move_up_deg = -90.0
+cameraOffset = Vector3(0, 0.2, 0.5)
+
+[node name="CameraController" type="Node3D" parent="DRAvatar2/DroneCamera" node_paths=PackedStringArray("controllerNode")]
+script = ExtResource("14_ox0gw")
+move_step = 0.2
+controllerNode = NodePath("..")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="DRAvatar2/DroneCamera/CameraController"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -350.0
+offset_top = 25.0
+offset_right = 290.0
+offset_bottom = 505.0
+grow_horizontal = 0
+scale = Vector2(0.5, 0.473)
+
+[node name="SubViewport" type="SubViewport" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075306445, 0.26028758)
+current = true
+
+[node name="DroneTopCamera" parent="DRAvatar2" instance=ExtResource("12_idqh5")]
+
+[node name="GameController" type="Node3D" parent="DRAvatar2"]
+script = ExtResource("15_vukou")
+
+[node name="LED_Back" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(0.011414111, 0, 0, 0, -3.059797e-10, -0.012187872, 0, 0.007, -5.327488e-10, -0.0049576648, -0.009400092, 0.047306485)
+mesh = SubResource("BoxMesh_dt7ya")
+script = ExtResource("17_n5fg8")
+disarmMaterial = ExtResource("16_5u3l5")
+takeoffMaterial = ExtResource("18_l4phi")
+hoverMaterial = ExtResource("19_piv2x")
+landingMaterial = ExtResource("20_yanwn")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+ledRenderer = NodePath(".")
+
+[node name="LED_Front" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(0.02, 0, 0, 0, 0.007, 0, 0, 0, 0.025, 0, 0.019269645, -0.06971371)
+mesh = SubResource("BoxMesh_dt7ya")
+script = ExtResource("17_n5fg8")
+disarmMaterial = ExtResource("16_5u3l5")
+takeoffMaterial = ExtResource("18_l4phi")
+hoverMaterial = ExtResource("19_piv2x")
+landingMaterial = ExtResource("20_yanwn")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+ledRenderer = NodePath(".")
+
+[node name="LED_FlightModeBack" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0.014299899, 0.040466093)
+mesh = SubResource("BoxMesh_dt7ya")
+script = ExtResource("21_htewp")
+attiMaterial = ExtResource("18_l4phi")
+gpsMaterial = ExtResource("22_586ah")
+offMaterial = ExtResource("16_5u3l5")
+attiBlinkInterval = 0.2
+ledRenderer = NodePath(".")
+
+[node name="LED_FlightModeFront" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.004, 0, 0.019458268, -0.083477855)
+mesh = SubResource("BoxMesh_dt7ya")
+script = ExtResource("21_htewp")
+attiMaterial = ExtResource("18_l4phi")
+gpsMaterial = ExtResource("22_586ah")
+offMaterial = ExtResource("16_5u3l5")
+attiBlinkInterval = 0.2
+ledRenderer = NodePath(".")
+
+[node name="GUI" type="Node3D" parent="."]
+visible = false
+script = ExtResource("23_b8lrn")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="GUI"]
+
+[node name="Control" type="Control" parent="GUI/CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Button_Start" type="Button" parent="GUI/CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 121.0
+offset_top = 12.0
+offset_right = 177.0
+offset_bottom = 43.0
+grow_horizontal = 2
+text = "START"
+
+[node name="Label_SimTimeH" type="Label" parent="GUI/CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 208.0
+offset_top = 12.0
+offset_right = 248.0
+offset_bottom = 35.0
+text = "Simulation Time [Sec] : "
+script = ExtResource("24_rtoji")
+
+[node name="InfoPanel" type="Node3D" parent="GUI/CanvasLayer" node_paths=PackedStringArray("batteryProgressBar", "fullVoltageText", "currVoltageText", "percentageText", "tempText", "pressureText", "battery")]
+script = ExtResource("25_61e2k")
+batteryProgressBar = NodePath("TextureProgressBar_battery")
+fullVoltageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_fullVoltage")
+currVoltageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_currVoltage")
+percentageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_percentage")
+tempText = NodePath("HBoxContainer/VBoxContainer_value/lbl_temperature")
+pressureText = NodePath("HBoxContainer/VBoxContainer_value/lbl_pressure")
+battery = NodePath("../../../DRAvatar2")
+
+[node name="TextureProgressBar_battery" type="TextureProgressBar" parent="GUI/CanvasLayer/InfoPanel"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 243.0
+offset_top = -183.0
+offset_right = 273.99994
+offset_bottom = -129.0
+grow_vertical = 0
+scale = Vector2(1.2, 1.2)
+size_flags_horizontal = 8
+value = 80.0
+fill_mode = 3
+nine_patch_stretch = true
+texture_under = ExtResource("26_kdru8")
+texture_progress = ExtResource("27_o2gd7")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/CanvasLayer/InfoPanel"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 292.0
+offset_top = -197.0
+offset_right = 337.0
+offset_bottom = 64.0
+grow_vertical = 0
+size_flags_horizontal = 8
+
+[node name="VBoxContainer_value" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -3
+
+[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "0.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "0.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "0.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "0.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "0.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="VBoxContainer_unity" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = -3
+
+[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "V"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "V"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "%"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "℃"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 15
+text = "A"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel" node_paths=PackedStringArray("drone", "altitudeText", "positionText", "velocityText", "distanceText")]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 238.0
+offset_top = -98.0
+offset_right = 336.0
+offset_bottom = -10.0
+grow_vertical = 0
+size_flags_horizontal = 8
+theme_override_constants/separation = 0
+script = ExtResource("28_mr38n")
+drone = NodePath("../../../../DRAvatar2")
+altitudeText = NodePath("lbl_altitude")
+positionText = NodePath("lbl_distance")
+velocityText = NodePath("lbl_position")
+distanceText = NodePath("lbl_velocity")
+
+[node name="lbl_altitude" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 15
+text = "Altitude(m):"
+vertical_alignment = 1
+
+[node name="lbl_distance" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 15
+text = "Distance(m):"
+vertical_alignment = 1
+
+[node name="lbl_position" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 15
+text = "Position(m):"
+vertical_alignment = 1
+
+[node name="lbl_velocity" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 15
+text = "Velocity(m/s):"
+vertical_alignment = 1
+
+[node name="DroneMap" type="Control" parent="GUI/CanvasLayer/InfoPanel" node_paths=PackedStringArray("drone", "map", "droneIcon", "droneRollIcon", "dronePitchIcon", "scaleText")]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = -215.0
+offset_right = 231.0
+offset_bottom = -15.0
+grow_vertical = 0
+size_flags_horizontal = 8
+script = ExtResource("29_43wo4")
+map_adjust_scale = 5.0
+drone = NodePath("../../../../DRAvatar2")
+map = NodePath("Map")
+droneIcon = NodePath("DroneIcon")
+droneRollIcon = NodePath("RollIcon")
+dronePitchIcon = NodePath("PitchIcon/Pitch")
+scaleText = NodePath("Label_scale")
+
+[node name="Back" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 10.0
+offset_right = 205.0
+offset_bottom = 210.0
+texture = ExtResource("30_hi0jk")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Map" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 10.0
+offset_right = 205.0
+offset_bottom = 210.0
+texture = ExtResource("31_q14kd")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="DroneIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 99.0
+offset_top = 97.0
+offset_right = 109.0
+offset_bottom = 117.0
+pivot_offset = Vector2(5, 10)
+texture = ExtResource("32_qa8oq")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label_scale" type="Label" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 138.0
+offset_top = 11.0
+offset_right = 178.0
+offset_bottom = 34.0
+text = "1/1"
+
+[node name="RollIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 64.0
+offset_top = 105.0
+offset_right = 144.0
+offset_bottom = 110.0
+pivot_offset = Vector2(40, 2.5)
+texture = ExtResource("33_hikm3")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="PitchIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+layout_mode = 0
+offset_left = 197.0
+offset_top = 12.0
+offset_right = 227.0
+offset_bottom = 212.0
+texture = ExtResource("34_ofjvk")
+expand_mode = 1
+
+[node name="Pitch" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap/PitchIcon"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 98.0
+offset_right = 24.0
+offset_bottom = 103.0
+pivot_offset = Vector2(9, 2.5)
+texture = ExtResource("35_dncf7")
+expand_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer"]
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -349.0
+offset_top = -50.0
+offset_right = 291.0
+offset_bottom = 914.0
+grow_horizontal = 0
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+
+[node name="SubViewportContainer_topCam" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SubViewport" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam"]
+handle_input_locally = false
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="Camera3D_top" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport" node_paths=PackedStringArray("DroneNode")]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.01253812, -0.023392752)
+projection = 1
+current = true
+size = 0.5
+near = 0.01
+script = ExtResource("36_v8m31")
+Offset = Vector3(0, 0.013, 0)
+CameraRotate = 90.0
+DroneNode = NodePath("../../../../../../DRAvatar2")
+
+[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -128.0
+offset_right = 128.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("37_bduti")
+
+[node name="SubViewportContainer_front" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SubViewport2" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front"]
+handle_input_locally = false
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="Camera3D_front" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2" node_paths=PackedStringArray("DroneNode")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.049293444, -0.1)
+projection = 1
+current = true
+size = 0.3
+near = 0.01
+script = ExtResource("36_v8m31")
+Offset = Vector3(0, 0, -0.1)
+CameraRotate = 0.0
+DroneNode = NodePath("../../../../../../DRAvatar2")
+
+[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -128.0
+offset_right = 128.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("37_bduti")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.059541807, 0)
+visible = false
+mesh = SubResource("PlaneMesh_dt7ya")
+
+[node name="baggage1" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5369355, 0.30673197, -0.57743764)
+
+[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage1"]
+mesh = SubResource("BoxMesh_ywsav")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage1"]
+shape = SubResource("BoxShape3D_dt7ya")
+debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
+
+[node name="baggage2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32320094, 0.05522746, -0.57743764)
+
+[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage2"]
+mesh = SubResource("BoxMesh_ywsav")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage2"]
+shape = SubResource("BoxShape3D_dt7ya")
+debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
+
+[node name="Obstacle1" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07965222, 0.7856939, -2.8594875)
+mass = 1000.0
+
+[node name="baggage1_mesh" type="MeshInstance3D" parent="Obstacle1"]
+mesh = SubResource("BoxMesh_d3neh")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacle1"]
+shape = SubResource("BoxShape3D_fcpor")
+debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
+
+[node name="Floor" type="StaticBody3D" parent="."]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.060149178, -9.7048855)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8474503, -0.10000001, -1.2446606e-07)
+mesh = SubResource("BoxMesh_am0b1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_d3neh")
+debug_color = Color(0.85617214, 0.00075526774, 0.88560927, 0.41960785)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_am0b1")
+
+[connection signal="pressed" from="GUI/CanvasLayer/Control/Button_Start" to="GUI" method="OnButtonClick"]

@@ -16,12 +16,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="hakoniwa_1"
 run/main_scene="uid://csffj5ulmehd8"
-config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 GameController="*res://Scripts/Hakoniwa/HakoSim/Drone/GameController.cs"
+AppController="*res://Scripts/AppController.cs"
 
 [dotnet]
 
@@ -29,7 +30,7 @@ project/assembly_name="hakoniwa_1"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/cesium_godot/plugin.cfg")
+enabled=PackedStringArray()
 
 [rendering]
 

@@ -35,8 +35,7 @@ namespace hakoniwa.drone
 
 		public override void _Ready()
 		{
-//			audioSource = FindComponent<AudioStreamPlayer3D>(this);
-			audioSource = FindNodeByInterface<AudioStreamPlayer3D>(this);
+			audioSource = NodeUtil.FindNodeByInterface<AudioStreamPlayer3D>(this);
 			if (audioSource == null && enableAudio)
 			{
 				audioSource = new AudioStreamPlayer3D();
@@ -48,29 +47,6 @@ namespace hakoniwa.drone
 				LoadAudio();
 			}
 		}
-
-		private T FindComponent<T>(Node node) where T : class
-		{
-			if (node is T found) return found;
-			foreach (Node child in node.GetChildren())
-			{
-				var result = FindComponent<T>(child);
-				if (result != null) return result;
-			}
-			return null;
-		}
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
 
 		private void LoadAudio()
 		{

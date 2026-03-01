@@ -27,8 +27,7 @@ namespace hakoniwa.objects.core
             if (magnetRenderer == null)
             {
                 // Try to find a MeshInstance3D on this node or children
-//                magnetRenderer = FindComponent<MeshInstance3D>(this);
-                magnetRenderer = FindNodeByInterface<MeshInstance3D>(this);
+                magnetRenderer = NodeUtil.FindNodeByInterface<MeshInstance3D>(this);
             }
 
             if (magnetRenderer == null)
@@ -53,30 +52,6 @@ namespace hakoniwa.objects.core
             }
         }
 
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-        
         public override void _PhysicsProcess(double delta)
         {
             if (on && currentBaggage == null)

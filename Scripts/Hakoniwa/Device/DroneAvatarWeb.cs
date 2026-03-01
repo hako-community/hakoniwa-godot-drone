@@ -62,8 +62,7 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
             body = this;
         }
         
-//        drone_propeller = FindComponent<DronePropeller>(this);
-        drone_propeller = FindNodeByInterface<DronePropeller>(this);
+        drone_propeller = NodeUtil.FindNodeByInterface<DronePropeller>(this);
         if (drone_propeller == null)
         {
             GD.PrintErr("Can not found drone propeller");
@@ -73,15 +72,13 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
             GD.Print("max rotation : " + drone_propeller.maxRotationSpeed);
         }
 
-//        drone_control = FindComponent<DroneControl>(this);
-        drone_control = FindNodeByInterface<DroneControl>(this);
+        drone_control = NodeUtil.FindNodeByInterface<DroneControl>(this);
         if (drone_control == null)
         {
             GD.Print("not found DroneControl");
         }
         
-//        droneConfig = FindComponent<DroneConfig>(this);
-        droneConfig = FindNodeByInterface<DroneConfig>(this);
+        droneConfig = NodeUtil.FindNodeByInterface<DroneConfig>(this);
         if (droneConfig != null)
         {
             droneConfig.LoadDroneConfig(robotName);
@@ -90,8 +87,7 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
             GD.Print("not found DroneConfig");
         }
         
-//        drone_collision = FindComponent<DroneCollision>(this);
-        drone_collision = FindNodeByInterface<DroneCollision>(this);
+        drone_collision = NodeUtil.FindNodeByInterface<DroneCollision>(this);
         if (drone_collision != null)
         {
             GD.Print("collision is attached.");
@@ -99,65 +95,6 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
         {
             GD.Print("not found DroneCollision");
         }
-    }
-
-    private T FindComponent<T>(Node node) where T : class
-    {
-        if (node is T found) return found;
-        foreach (Node child in node.GetChildren())
-        {
-            var result = FindComponent<T>(child);
-            if (result != null) return result;
-        }
-        return null;
-    }
-#if false
-    private List<T> FindComponents<T>(Node node) where T : class
-    {
-        List<T> results = new List<T>();
-        if (node is T found) results.Add(found);
-        foreach (Node child in node.GetChildren())
-        {
-            results.AddRange(FindComponents<T>(child));
-        }
-        return results;
-    }
-#else
-    private List<T> FindComponents<T>() where T : class
-    {
-        List<T> results = new List<T>();
-        var root = GetTree().Root;
-        _FindComponentsRecursive(root, results);
-        return results;
-    }
-
-    private void _FindComponentsRecursive<T>(Node node, List<T> results) where T : class
-    {
-        if (node == null) return;
-
-        // 1. 自分自身が型 T にキャストできるかチェック
-        if (node is T found)
-        {
-            results.Add(found);
-        }
-
-        // 2. 子ノードに対して再帰的に処理
-        foreach (Node child in node.GetChildren())
-        {
-            _FindComponentsRecursive(child, results);
-        }
-    }
-#endif
-    public T FindNodeByInterface<T>(Node root) where T : class
-    {
-        if (root is T found) return found;
-
-        foreach (Node child in root.GetChildren())
-        {
-            var result = FindNodeByInterface<T>(child);
-            if (result != null) return result;
-        }
-        return null;
     }
 
     private float[] prev_controls = new float[4];
@@ -381,16 +318,14 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
         
         if (camera_controller != null) camera_controller.GetCameraController().DelclarePdu(robotName, p_manager);
         
-//        var local_lidars_test = FindComponent<ILiDAR3DController>(this);
-        var local_lidars_test = FindNodeByInterface<ILiDAR3DController>(this);
+        var local_lidars_test = NodeUtil.FindNodeByInterface<ILiDAR3DController>(this);
         if (local_lidars_test != null)
         {
             await p_manager.DeclarePduForWrite(robotName, "lidar_pos");
             await p_manager.DeclarePduForWrite(robotName, "lidar_point_cloud");
         }
         
-//        wind = FindComponent<Wind>(this);
-        var wind = FindNodeByInterface<Wind>(this);
+        var wind = NodeUtil.FindNodeByInterface<Wind>(this);
         if (wind != null) await p_manager.DeclarePduForRead(robotName, pdu_name_disturbance);
         
         await p_manager.DeclarePduForRead(robotName, pdu_name_status);
@@ -417,4 +352,13 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
                 sea_level_atm,
                 sea_level_temperature));
     }
+
+    private List<T> FindComponents<T>() where T : class
+    {
+        List<T> results = new List<T>();
+        var root = GetTree().Root;
+        NodeUtil._FindComponentsRecursive(root, results);
+        return results;
+    }
+
 }

@@ -58,8 +58,7 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         if (hakoObjects == null) return false;
         foreach (var obj in hakoObjects)
         {
-//            IHakoObject ihako = FindComponent<IHakoObject>(obj);
-            IHakoObject ihako = FindNodeByInterface<IHakoObject>(obj);
+            IHakoObject ihako = NodeUtil.FindNodeByInterface<IHakoObject>(obj);
             if (ihako == null)
             {
                 throw new ArgumentException("Can not find IHakoObject on " + obj.Name);
@@ -67,30 +66,6 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
             hakoObectList.Add(ihako);
         }
         return hakoObectList.Count > 0;
-    }
-
-    private T FindComponent<T>(Node root) where T : class
-    {
-        if (root is T t) return t;
-        foreach (Node child in root.GetChildren())
-        {
-            var res = FindComponent<T>(child);
-            if (res != null) return res;
-        }
-        return null;
-    }
-
-
-    public T FindNodeByInterface<T>(Node root) where T : class
-    {
-        if (root is T found) return found;
-
-        foreach (Node child in root.GetChildren())
-        {
-            var result = FindNodeByInterface<T>(child);
-            if (result != null) return result;
-        }
-        return null;
     }
 
     public override async void _Ready()

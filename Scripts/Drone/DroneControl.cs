@@ -66,8 +66,7 @@ namespace hakoniwa.drone
 			}
 			else
 			{
-//				droneControlOp = FindComponent<IDroneControlOp>(this);
-				droneControlOp = FindNodeByInterface<IDroneControlOp>(this);
+				droneControlOp = NodeUtil.FindNodeByInterface<IDroneControlOp>(this);
 			}
 			if (droneControlOp != null)
 			{
@@ -76,8 +75,7 @@ namespace hakoniwa.drone
 
 			if (grabberObject != null)
 			{
-//				grabber = FindComponent<IBaggageGrabber>(grabberObject);
-				grabber = FindNodeByInterface<IBaggageGrabber>(grabberObject);
+				grabber = NodeUtil.FindNodeByInterface<IBaggageGrabber>(grabberObject);
 				GD.Print("grabber: " + grabber);
 			}
 			else
@@ -98,30 +96,6 @@ namespace hakoniwa.drone
 				controller_input = HakoDroneXrInputManager.Instance;
 			}
 		}
-
-		private T FindComponent<T>(Node node) where T : class
-		{
-			if (node is T found) return found;
-			foreach (Node child in node.GetChildren())
-			{
-				var result = FindComponent<T>(child);
-				if (result != null) return result;
-			}
-			return null;
-		}
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
             
 		public float move_step = 1.0f; 
 		private float camera_move_button_time_duration = 0f;

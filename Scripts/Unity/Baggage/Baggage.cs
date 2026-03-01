@@ -24,38 +24,13 @@ namespace hakoniwa.objects.core
             initial_parent = GetParent();
 
             // Rigidbodyコンポーネントを取得
-//            rd = FindComponent<RigidBody3D>(this);
-            rd = FindNodeByInterface<RigidBody3D>(this);
+            rd = NodeUtil.FindNodeByInterface<RigidBody3D>(this);
             if (rd == null)
             {
                 GD.Print($"Not found RigidBody3D on {this.Name}");
             }
         }
 
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-        
         /// <summary>
         /// 他のオブジェクトに掴まれる（親として登録される）
         /// </summary>

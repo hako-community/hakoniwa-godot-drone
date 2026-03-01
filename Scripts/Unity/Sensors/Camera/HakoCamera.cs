@@ -15,8 +15,7 @@ namespace hakoniwa.objects.core.sensors
         public void ConfigureCamera(string cameraId, string cameraType, string _encode_type, string coordinate_type, string target, Vector3 position, Vector3 rotation, float fov, int width, int height)
         {
             // 1. Get or Create Camera3D
-//            _camera = FindComponent<Camera3D>(this);
-            _camera = FindNodeByInterface<Camera3D>(this);
+            _camera = NodeUtil.FindNodeByInterface<Camera3D>(this);
             if (_camera == null)
             {
                 _camera = new Camera3D();
@@ -56,7 +55,7 @@ namespace hakoniwa.objects.core.sensors
                     GD.PrintErr("Can not find Node: " + target);
                     return;
                 }
-                targetObject = FindComponent<IMovableObject>(obj);
+                targetObject = NodeUtil.FindNodeByInterface<IMovableObject>(obj);
                 if (targetObject == null)
                 {
                     GD.PrintErr("Can not find IMovableObject: " + target);
@@ -126,29 +125,6 @@ namespace hakoniwa.objects.core.sensors
             {
                 return img.SaveJpgToBuffer();
             }
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
     }
 }

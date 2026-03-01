@@ -81,13 +81,11 @@ namespace hakoniwa.objects.core
         {
             if (rb == null)
             {
-//                rb = FindComponent<RigidBody3D>(GetParent());
-                rb = FindNodeByInterface<RigidBody3D>(GetParent());
+                rb = NodeUtil.FindNodeByInterface<RigidBody3D>(GetParent());
             }
             if (collider_obj == null)
             {
-//                collider_obj = FindComponent<CollisionObject3D>(GetParent());
-                collider_obj = FindNodeByInterface<CollisionObject3D>(GetParent());
+                collider_obj = NodeUtil.FindNodeByInterface<CollisionObject3D>(GetParent());
             }
 
             if (collider_obj == null)
@@ -110,29 +108,6 @@ namespace hakoniwa.objects.core
             currentTime = 0;
         }
 
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
         public override void _ExitTree()
         {
             if (collider_obj != null)

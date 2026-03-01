@@ -127,8 +127,7 @@ namespace hakoniwa.objects.core.sensors
             {
                 // Godot: Instantiate PackedScene
                 Node3D newCamera = cameraPrefab.Instantiate<Node3D>();
-//                HakoCamera hakoCamera = FindComponent<HakoCamera>(newCamera);
-                HakoCamera hakoCamera = FindNodeByInterface<HakoCamera>(newCamera);
+                HakoCamera hakoCamera = NodeUtil.FindNodeByInterface<HakoCamera>(newCamera);
                 if (hakoCamera == null)
                 {
                     GD.PrintErr($"Failed to get HakoCamera component for {camData.pdu_info.robot_name}");
@@ -161,29 +160,6 @@ namespace hakoniwa.objects.core.sensors
 
                 hakoCameras[camData.pdu_info.robot_name] = hakoCamera;
             }
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
     }
 }

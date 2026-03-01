@@ -112,7 +112,7 @@ namespace hakoniwa.objects.core.sensors
         {
             if (this.my_camera == null)
             {
-                this.my_camera = FindNodeByInterface<Camera3D>(this);
+                this.my_camera = NodeUtil.FindNodeByInterface<Camera3D>(this);
             }
             
             if (my_camera == null)
@@ -125,7 +125,7 @@ namespace hakoniwa.objects.core.sensors
             // Create SubViewport for off-screen rendering if not found
             if (_viewport == null)
             {
-                _viewport = FindNodeByInterface<SubViewport>(this);
+                _viewport = NodeUtil.FindNodeByInterface<SubViewport>(this);
             }
 
             if (_viewport == null)
@@ -166,30 +166,6 @@ namespace hakoniwa.objects.core.sensors
                 mat.AlbedoTexture = _viewport.GetTexture();
                 targetRenderer.MaterialOverride = mat;
             }
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         public void RotateCamera(float step)

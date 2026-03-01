@@ -30,24 +30,12 @@ namespace hakoniwa.drone.sim
 
         public override void _Ready()
         {
-//            this.controller = FindComponent<ICameraController>(GetParent());
             this.controller = controllerNode as ICameraController;
             if (this.controller == null)
             {
                 throw new Exception("Can not find ICameraController");
             }
             controller.Initialize();
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         public void DoInitialize(string robot_name, IHakoPdu hakoPdu)
@@ -90,7 +78,7 @@ namespace hakoniwa.drone.sim
                     this.controller = controllerNode as ICameraController;
                 
                 if (this.controller == null)
-                    this.controller = FindComponent<ICameraController>(GetParent());
+                    this.controller = NodeUtil.FindNodeByInterface<ICameraController>(GetParent());
             }
 
             if (this.controller == null)

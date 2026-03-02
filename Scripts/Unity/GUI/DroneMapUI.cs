@@ -132,7 +132,9 @@ namespace hakoniwa.objects.core
             droneIcon.RotationDegrees = -realDroneAngle.Y; // ドローンの向きを反映 (Y軸の回転をZに反映)
 
             // Roll (ロール角) を反映
-            droneRollIcon.RotationDegrees = realDroneAngle.Z;
+//            droneRollIcon.RotationDegrees = realDroneAngle.Z;
+            droneRollIcon.RotationDegrees = realDroneAngle.Z*(-1.0f); // ロールは反転させると見た目がわかりやすいかも
+                                                                      // 傾き方が逆だったので反転させました
 
             // ピッチアイコンの高さを設定
             UpdatePitchIcon(realDroneAngle);
@@ -142,7 +144,8 @@ namespace hakoniwa.objects.core
         {
             // ピッチ角の設定
             float pitchAngle = NormalizeAngle(realDroneAngle.X); // 角度を -180 から 180 の範囲に正規化
-
+            pitchAngle *= (-1.0f); // ピッチの傾き方向を反転させる（見た目の調整）
+            
             // ±40度の制限を適用
             pitchAngle = pitch_adjust_scale * Mathf.Clamp(pitchAngle, -40.0f, 40.0f);
             

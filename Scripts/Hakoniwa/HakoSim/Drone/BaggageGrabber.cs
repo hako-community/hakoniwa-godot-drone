@@ -28,38 +28,12 @@ namespace hakoniwa.drone.sim
             {
                 throw new ArgumentException($"Can not declare pdu for read: {robotName} {pdu_name_status_magnet}");
             }
-//            magnet = FindComponent<Magnet>(this);
-            magnet = FindNodeByInterface<Magnet>(this);
+            magnet = NodeUtil.FindNodeByInterface<Magnet>(this);
             if(magnet == null)
             {
                 throw new ArgumentException($"Can not find Magnet on: {robotName}");
             }
         }
-
-        
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
 
         public void DoControl(IPduManager pduManager)
         {

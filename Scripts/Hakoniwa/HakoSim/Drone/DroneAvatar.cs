@@ -98,8 +98,7 @@ namespace hakoniwa.drone.sim
              }
 
             // Recursive searches
-//            drone_propeller = FindComponent<DronePropeller>(this);
-            drone_propeller = FindNodeByInterface<DronePropeller>(this);
+            drone_propeller = NodeUtil.FindNodeByInterface<DronePropeller>(this);
              if (drone_propeller != null)
              {
                  GD.Print("DroneAvatar: DronePropeller found.");
@@ -116,29 +115,21 @@ namespace hakoniwa.drone.sim
             {
                 GD.PrintErr("DroneAvatar Error: DronePropeller component not found! LED state will not change.");
             }
-//            drone_collision = FindComponent<DroneCollision>(this);
-//            drone_collision = FindNodeByInterface<DroneCollision>(this);
             drone_collision = droneCollisionNode as DroneCollision;
 
-//            touchSensor = FindComponent<TouchSensor>(this);
-            touchSensor = FindNodeByInterface<TouchSensor>(this);
+            touchSensor = NodeUtil.FindNodeByInterface<TouchSensor>(this);
 
-//            gameController = FindComponent<GameController>(this);
-            gameController = FindNodeByInterface<GameController>(this);
+            gameController = NodeUtil.FindNodeByInterface<GameController>(this);
 
-//            cameraController = FindComponent<CameraController>(this);
-            cameraController = FindNodeByInterface<CameraController>(this);
+            cameraController = NodeUtil.FindNodeByInterface<CameraController>(this);
 
-//            baggageGrabber = FindComponent<BaggageGrabber>(this);
-            baggageGrabber = FindNodeByInterface<BaggageGrabber>(this);
+            baggageGrabber = NodeUtil.FindNodeByInterface<BaggageGrabber>(this);
 
-//            droneConfig = FindComponent<DroneConfig>(this);
-            droneConfig = FindNodeByInterface<DroneConfig>(this);
+            droneConfig = NodeUtil.FindNodeByInterface<DroneConfig>(this);
 
             lidars = FindComponents<ILiDAR3DController>();
 
-//            wind = FindComponent<Wind>(this);
-            wind = FindNodeByInterface<Wind>(this);
+            wind = NodeUtil.FindNodeByInterface<Wind>(this);
 
              if (touchSensor != null)
              {
@@ -233,64 +224,12 @@ namespace hakoniwa.drone.sim
             foreach (var w in propeller_winds) w.SetWindVelocityFromRos(Godot.Vector3.Zero);
         }
 
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-#if false
-        private List<T> FindComponents<T>(Node node) where T : class
-        {
-            List<T> results = new List<T>();
-            if (node is T found) results.Add(found);
-            foreach (Node child in node.GetChildren())
-            {
-                results.AddRange(FindComponents<T>(child));
-            }
-            return results;
-        }
-#else
         private List<T> FindComponents<T>() where T : class
         {
             List<T> results = new List<T>();
             var root = GetTree().Root;
-            _FindComponentsRecursive(root, results);
+            NodeUtil._FindComponentsRecursive(root, results);
             return results;
-        }
-
-        private void _FindComponentsRecursive<T>(Node node, List<T> results) where T : class
-        {
-            if (node == null) return;
-
-            // 1. 自分自身が型 T にキャストできるかチェック
-            if (node is T found)
-            {
-                results.Add(found);
-            }
-
-            // 2. 子ノードに対して再帰的に処理
-            foreach (Node child in node.GetChildren())
-            {
-                _FindComponentsRecursive(child, results);
-            }
-        }
-#endif
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         public void EventReset() { }

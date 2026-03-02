@@ -25,8 +25,7 @@ namespace hakoniwa.drone
 
         private void OnBodyEntered(Node3D body)
         {
-//            var target = FindComponentInParent<IDroneDisturbableObject>(body);
-            var target = FindNodeByInterface<IDroneDisturbableObject>(body);
+            var target = NodeUtil.FindNodeByInterface<IDroneDisturbableObject>(body);
             if (target != null)
             {
                 target.ApplyDisturbance(temperature, windVector);
@@ -35,37 +34,11 @@ namespace hakoniwa.drone
 
         private void OnBodyExited(Node3D body)
         {
-//            var target = FindComponentInParent<IDroneDisturbableObject>(body);
-            var target = FindNodeByInterface<IDroneDisturbableObject>(body);
+            var target = NodeUtil.FindNodeByInterface<IDroneDisturbableObject>(body);
             if (target != null)
             {
                 target.ResetDisturbance();
             }
         }
-
-        private T FindComponentInParent<T>(Node node) where T : class
-        {
-            Node current = node;
-            while (current != null)
-            {
-                if (current is T found) return found;
-                current = current.GetParent();
-            }
-            return null;
-        }
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-
-
     }
 }

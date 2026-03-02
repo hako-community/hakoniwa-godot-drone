@@ -89,8 +89,7 @@ namespace hakoniwa.drone
 
         Vector3 GetPlaneCenterWorld(Node3D plane)
         {
-//            var mi = FindComponent<MeshInstance3D>(plane);
-            var mi = FindNodeByInterface<MeshInstance3D>(plane);
+            var mi = NodeUtil.FindNodeByInterface<MeshInstance3D>(plane);
             if (mi != null && mi.Mesh != null)
             {
                 return plane.ToGlobal(mi.Mesh.GetAabb().GetCenter());
@@ -100,8 +99,7 @@ namespace hakoniwa.drone
 
         Vector2 GetPlaneSizeWorld(Node3D plane)
         {
-//            var mi = FindComponent<MeshInstance3D>(plane);
-            var mi = FindNodeByInterface<MeshInstance3D>(plane);
+            var mi = NodeUtil.FindNodeByInterface<MeshInstance3D>(plane);
             if (mi == null || mi.Mesh == null) return Vector2.Zero;
 
             Aabb aabb = mi.Mesh.GetAabb();
@@ -116,29 +114,6 @@ namespace hakoniwa.drone
         Vector3 GetPlaneNormalWorld(Node3D plane, Vector3 localNormal)
         {
             return (plane.GlobalTransform.Basis * localNormal).Normalized();
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         static Vector3 UnityToRos(Vector3 v) => new Vector3(v.Z, -v.X, v.Y);

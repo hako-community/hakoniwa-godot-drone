@@ -23,8 +23,7 @@ public partial class DroneAvatarDevice : Node, IHakoniwaArObject
         {
             throw new Exception("Body is not assigned");
         }
-//        drone_propeller = FindComponent<DronePropeller>(body);
-        drone_propeller = FindNodeByInterface<DronePropeller>(body);
+        drone_propeller = NodeUtil.FindNodeByInterface<DronePropeller>(body);
         if (drone_propeller == null)
         {
             throw new Exception("Can not found drone propeller");
@@ -33,29 +32,6 @@ public partial class DroneAvatarDevice : Node, IHakoniwaArObject
     }
     
     private float[] prev_controls = new float[4];
-
-    private T FindComponent<T>(Node node) where T : class
-    {
-        if (node is T found) return found;
-        foreach (Node child in node.GetChildren())
-        {
-            var result = FindComponent<T>(child);
-            if (result != null) return result;
-        }
-        return null;
-    }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
 
     public override void _PhysicsProcess(double delta)
     {

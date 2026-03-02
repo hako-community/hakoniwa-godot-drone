@@ -45,8 +45,7 @@ namespace hakoniwa.gui.sim
                 {
                     // If no label assigned, we might want to use button's own text
                     // but myText is used in many places. Let's see if there is a Label child.
-//                    myText = FindComponent<Label>(myButton);
-                    myText = FindNodeByInterface<Label>(myButton);
+                    myText = NodeUtil.FindNodeByInterface<Label>(myButton);
                 }
             }
             if (myText != null)
@@ -57,29 +56,6 @@ namespace hakoniwa.gui.sim
             {
                 myButton.Text = "START";
             }
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         private void SetText(string text)

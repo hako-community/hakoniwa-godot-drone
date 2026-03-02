@@ -133,26 +133,22 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
             sharesim_client = ShareSimClient.Instance;
             ibridge = HakoniwaArBridgeDevice.Instance;
         }
-//        my_collision = FindComponent<DroneCollision>(this);
-        my_collision = FindNodeByInterface<DroneCollision>(this);
+        my_collision = NodeUtil.FindNodeByInterface<DroneCollision>(this);
         if (my_collision == null) {
             throw new Exception("Can not found collision");
         }
-//        drone_control = FindComponent<DroneControl>(this);
-        drone_control = FindNodeByInterface<DroneControl>(this);
+        drone_control = NodeUtil.FindNodeByInterface<DroneControl>(this);
         if (drone_control == null)
         {
             throw new Exception("Can not found drone control");
         }
-//        drone_propeller = FindComponent<DronePropeller>(this);
-        drone_propeller = FindNodeByInterface<DronePropeller>(this);
+        drone_propeller = NodeUtil.FindNodeByInterface<DronePropeller>(this);
         if (drone_propeller == null)
         {
             throw new Exception("Can not found drone propeller");
         }
         my_collision.SetIndex(0);
-//        baggage_grabber = FindComponent<BaggageGrabber>(this);
-        baggage_grabber = FindNodeByInterface<BaggageGrabber>(this);
+        baggage_grabber = NodeUtil.FindNodeByInterface<BaggageGrabber>(this);
     
         if (baggage_grabber == null)
         {
@@ -189,8 +185,7 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
         /*
          * Camera
          */
-//        camera_controller = FindComponent<ICameraController>(this);
-        camera_controller = FindNodeByInterface<ICameraController>(this);
+        camera_controller = NodeUtil.FindNodeByInterface<ICameraController>(this);
         if (camera_controller != null)
         {
             GD.Print("Camera is enabled");
@@ -233,29 +228,6 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
         {
             GD.PrintErr("Can not Start DroneService RC");
         }
-    }
-
-    private T FindComponent<T>(Node node) where T : class
-    {
-        if (node is T found) return found;
-        foreach (Node child in node.GetChildren())
-        {
-            var result = FindComponent<T>(child);
-            if (result != null) return result;
-        }
-        return null;
-    }
-
-    public T FindNodeByInterface<T>(Node root) where T : class
-    {
-        if (root is T found) return found;
-
-        foreach (Node child in root.GetChildren())
-        {
-            var result = FindNodeByInterface<T>(child);
-            if (result != null) return result;
-        }
-        return null;
     }
 
     private string LoadTextFromResources(string resourcePath)

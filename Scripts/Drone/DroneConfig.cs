@@ -46,43 +46,14 @@ namespace hakoniwa.drone
 //        public string drone_config_path = "./drone_config.json";
         public string drone_config_path = "drone_config.json";
 
-#if false
-        private List<T> FindComponents<T>(Node node) where T : class
-        {
-            List<T> results = new List<T>();
-            if (node is T found) results.Add(found);
-            foreach (Node child in node.GetChildren())
-            {
-                results.AddRange(FindComponents<T>(child));
-            }
-            return results;
-        }
-#else
         private List<T> FindComponents<T>() where T : class
         {
             List<T> results = new List<T>();
             var root = GetTree().Root;
-            _FindComponentsRecursive(root, results);
+            NodeUtil._FindComponentsRecursive(root, results);
             return results;
         }
 
-        private void _FindComponentsRecursive<T>(Node node, List<T> results) where T : class
-        {
-            if (node == null) return;
-
-            // 1. 自分自身が型 T にキャストできるかチェック
-            if (node is T found)
-            {
-                results.Add(found);
-            }
-
-            // 2. 子ノードに対して再帰的に処理
-            foreach (Node child in node.GetChildren())
-            {
-                _FindComponentsRecursive(child, results);
-            }
-        }
-#endif
         public void LoadDroneConfig(string droneName)
         {
 //            string filePath = drone_config_path;

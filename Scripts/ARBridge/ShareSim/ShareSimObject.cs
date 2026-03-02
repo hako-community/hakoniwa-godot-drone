@@ -55,43 +55,18 @@ namespace hakoniwa.ar.bridge.sharesim
                 throw new System.Exception("Can not find target_object");
             }
 
-//            physics = FindComponent<IShareSimPhysics>(target_object);
-            physics = FindNodeByInterface<IShareSimPhysics>(target_object);
+            physics = NodeUtil.FindNodeByInterface<IShareSimPhysics>(target_object);
             if (physics == null)
             {
                 throw new System.Exception("Can not find IShareSimPhysics on " + target_object.Name);
             }
-//            avatar = FindComponent<IShareSimAvatar>(target_object);
-            avatar = FindNodeByInterface<IShareSimAvatar>(target_object);
+            avatar = NodeUtil.FindNodeByInterface<IShareSimAvatar>(target_object);
             if (avatar == null)
             {
                 throw new System.Exception("Can not find IShareSimAvatar on " + target_object.Name);
             }
             physics.Initialize(target_object);
             avatar.Initialize(target_object);
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         public void DoStart()

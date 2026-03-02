@@ -34,36 +34,12 @@ namespace hakoniwa.ar.bridge.sharesim
 
         private void Start()
         {
-//            magnet = FindComponent<Magnet>(this);
-            magnet = FindNodeByInterface<Magnet>(this);
+            magnet = NodeUtil.FindNodeByInterface<Magnet>(this);
             if (magnet == null)
             {
                 throw new System.Exception("Can not find magnet on " + this.Name);
             }
             currentBaggage = null;
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         private async Task<Baggage> RequestGrabAsync(uint owner_id, IPduManager pduManager)

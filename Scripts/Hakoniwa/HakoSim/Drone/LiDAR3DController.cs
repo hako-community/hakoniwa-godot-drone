@@ -17,36 +17,12 @@ namespace hakoniwa.drone.sim
             {
                 return controller;
             }
-//            controller = FindComponent<ILiDAR3DController>(this);
-            controller = FindNodeByInterface<ILiDAR3DController>(this);
+            controller = NodeUtil.FindNodeByInterface<ILiDAR3DController>(this);
             if (controller == null)
             {
                 throw new Exception("Can not find ILiDAR3DController");
             }
             return controller;
-        }
-
-        private T FindComponent<T>(Node node) where T : class
-        {
-            if (node is T found) return found;
-            foreach (Node child in node.GetChildren())
-            {
-                var result = FindComponent<T>(child);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        public T FindNodeByInterface<T>(Node root) where T : class
-        {
-            if (root is T found) return found;
-
-            foreach (Node child in root.GetChildren())
-            {
-                var result = FindNodeByInterface<T>(child);
-                if (result != null) return result;
-            }
-            return null;
         }
 
         public void DoInitialize(string robotName, IHakoPdu hakoPdu)

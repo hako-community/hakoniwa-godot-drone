@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3 uid="uid://csffj5ulmehd8"]
+[gd_scene format=3 uid="uid://csffj5ulmehd8"]
 
 [ext_resource type="Script" uid="uid://bi7xlqcvlqkpu" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_gbdt5"]
 [ext_resource type="Script" uid="uid://c2np2chmdjnds" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_b7pws"]
@@ -110,105 +110,106 @@ sky_material = SubResource("ProceduralSkyMaterial_fcpor")
 background_mode = 2
 sky = SubResource("Sky_ywsav")
 
-[node name="hakoniwa_1" type="Node3D"]
+[node name="hakoniwa_1" type="Node3D" unique_id=1437935397]
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=2109683039]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4391567, 0.8322507)
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1139128618]
 transform = Transform3D(1, 0, 0, 0, 0.82253134, 0.5687198, 0, -0.5687198, 0.82253134, 0, 0, 0)
 light_color = Color(1, 1, 0.9372549, 1)
 shadow_enabled = true
 
-[node name="Hakoniwa" type="Node3D" parent="."]
+[node name="Hakoniwa" type="Node3D" parent="." unique_id=111513354 node_paths=PackedStringArray("hakoObjects")]
 script = ExtResource("1_gbdt5")
 customJsonFilePath = "./avatar-drone.json"
+hakoObjects = [NodePath("../DRAvatar2")]
 
-[node name="DRAvatar2" type="Node3D" parent="." node_paths=PackedStringArray("body", "rd", "droneCollisionNode")]
+[node name="DRAvatar2" type="Node3D" parent="." unique_id=457310837 node_paths=PackedStringArray("body", "rd", "droneCollisionNode")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051187024, 0)
 script = ExtResource("2_b7pws")
 body = NodePath("dji_avatar2")
 rd = NodePath("RigidBody3D")
 droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")
 
-[node name="RigidBody3D" type="RigidBody3D" parent="DRAvatar2"]
+[node name="RigidBody3D" type="RigidBody3D" parent="DRAvatar2" unique_id=663242323]
 physics_material_override = SubResource("PhysicsMaterial_d0svw")
 contact_monitor = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DRAvatar2/RigidBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DRAvatar2/RigidBody3D" unique_id=1460571197]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.00957296, -0.02317664)
 shape = SubResource("BoxShape3D_1csff")
 debug_color = Color(0.9222214, 0.048371576, 0.6714262, 0.41960785)
 script = ExtResource("3_dxre5")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/RigidBody3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/RigidBody3D" unique_id=391620721]
 transform = Transform3D(0.5, 0, 0, 0, -1, -1.509958e-07, 0, 1.509958e-07, -1, 0, 0, 0)
 
-[node name="LiDAR" type="Node3D" parent="DRAvatar2"]
+[node name="LiDAR" type="Node3D" parent="DRAvatar2" unique_id=1082138799]
 script = ExtResource("4_3dyd2")
 
-[node name="sensor" type="Node3D" parent="DRAvatar2/LiDAR"]
+[node name="sensor" type="Node3D" parent="DRAvatar2/LiDAR" unique_id=906011756]
 script = ExtResource("5_e8cb3")
 
-[node name="box" type="MeshInstance3D" parent="DRAvatar2/LiDAR"]
+[node name="box" type="MeshInstance3D" parent="DRAvatar2/LiDAR" unique_id=615816447]
 transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, -0.012109918, -0.11100012)
 mesh = SubResource("BoxMesh_fcpor")
 
-[node name="cylinder" type="MeshInstance3D" parent="DRAvatar2/LiDAR/box"]
+[node name="cylinder" type="MeshInstance3D" parent="DRAvatar2/LiDAR/box" unique_id=710034578]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, -0.47900963)
 mesh = SubResource("CylinderMesh_ywsav")
 
-[node name="Propellers" type="Node3D" parent="DRAvatar2" node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
+[node name="Propellers" type="Node3D" parent="DRAvatar2" unique_id=1802599988 node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
 script = ExtResource("6_gfuh5")
-enableAudio = false
-maxRotationSpeed = 40000.0
 propeller1 = NodePath("propeller1")
 propeller2 = NodePath("propeller2")
 propeller3 = NodePath("propeller3")
 propeller4 = NodePath("propeller4")
+enableAudio = false
+maxRotationSpeed = 40000.0
 
-[node name="propeller1" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+[node name="propeller1" parent="DRAvatar2/Propellers" unique_id=2124053533 instance=ExtResource("7_aqafc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05889766, -0.010962147, -0.068796396)
 
-[node name="propeller2" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+[node name="propeller2" parent="DRAvatar2/Propellers" unique_id=1305391490 instance=ExtResource("7_aqafc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.059, -0.011, 0.022)
 
-[node name="propeller3" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+[node name="propeller3" parent="DRAvatar2/Propellers" unique_id=686500983 instance=ExtResource("7_aqafc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.058, -0.011, -0.068)
 
-[node name="propeller4" parent="DRAvatar2/Propellers" instance=ExtResource("7_aqafc")]
+[node name="propeller4" parent="DRAvatar2/Propellers" unique_id=1929523109 instance=ExtResource("7_aqafc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.059, -0.011, 0.022)
 
-[node name="dji_avatar2" parent="DRAvatar2" instance=ExtResource("8_0j742")]
+[node name="dji_avatar2" parent="DRAvatar2" unique_id=1292418912 instance=ExtResource("8_0j742")]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 
-[node name="BaggageGrabber" type="Node3D" parent="DRAvatar2"]
+[node name="BaggageGrabber" type="Node3D" parent="DRAvatar2" unique_id=242141299]
 script = ExtResource("9_i4ev6")
 
-[node name="Magnet" type="Node3D" parent="DRAvatar2/BaggageGrabber" node_paths=PackedStringArray("magnetRenderer")]
+[node name="Magnet" type="Node3D" parent="DRAvatar2/BaggageGrabber" unique_id=2145280161 node_paths=PackedStringArray("magnetRenderer")]
 transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, -0.0035444275, -0.03789684, 0)
 script = ExtResource("10_oxpj0")
-detectionRange = 1.0
 magnetRenderer = NodePath("MeshInstance3D")
+detectionRange = 1.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/BaggageGrabber/Magnet"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/BaggageGrabber/Magnet" unique_id=84757036]
 transform = Transform3D(0.04, 0, 0, 0, 0.006, 0, 0, 0, 0.04, 0, -0.04105076, 0)
 mesh = SubResource("BoxMesh_1csff")
 
-[node name="DroneConfig" type="Node3D" parent="DRAvatar2"]
+[node name="DroneConfig" type="Node3D" parent="DRAvatar2" unique_id=233300000]
 script = ExtResource("11_bb4ut")
 
-[node name="DroneCamera" parent="DRAvatar2" instance=ExtResource("12_idqh5")]
+[node name="DroneCamera" parent="DRAvatar2" unique_id=794695372 instance=ExtResource("12_idqh5")]
 script = ExtResource("13_5rb4j")
 camera_move_up_deg = -90.0
 cameraOffset = Vector3(0, 0.2, 0.5)
 
-[node name="CameraController" type="Node3D" parent="DRAvatar2/DroneCamera" node_paths=PackedStringArray("controllerNode")]
+[node name="CameraController" type="Node3D" parent="DRAvatar2/DroneCamera" unique_id=320250055 node_paths=PackedStringArray("controllerNode")]
 script = ExtResource("14_ox0gw")
-move_step = 0.2
 controllerNode = NodePath("..")
+move_step = 0.2
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="DRAvatar2/DroneCamera/CameraController"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="DRAvatar2/DroneCamera/CameraController" unique_id=2014882371]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -219,77 +220,77 @@ offset_bottom = 505.0
 grow_horizontal = 0
 scale = Vector2(0.5, 0.473)
 
-[node name="SubViewport" type="SubViewport" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer" unique_id=1140248028]
 handle_input_locally = false
 size = Vector2i(640, 480)
 render_target_update_mode = 4
 
-[node name="Camera3D" type="Camera3D" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer/SubViewport"]
+[node name="Camera3D" type="Camera3D" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer/SubViewport" unique_id=843075335]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075306445, 0.26028758)
 current = true
 
-[node name="DroneTopCamera" parent="DRAvatar2" instance=ExtResource("12_idqh5")]
+[node name="DroneTopCamera" parent="DRAvatar2" unique_id=1708032961 instance=ExtResource("12_idqh5")]
 
-[node name="GameController" type="Node3D" parent="DRAvatar2"]
+[node name="GameController" type="Node3D" parent="DRAvatar2" unique_id=1308774521]
 script = ExtResource("15_vukou")
 
-[node name="LED_Back" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+[node name="LED_Back" type="MeshInstance3D" parent="DRAvatar2" unique_id=130670884 node_paths=PackedStringArray("ledRenderer")]
 transform = Transform3D(0.011414111, 0, 0, 0, -3.059797e-10, -0.012187872, 0, 0.007, -5.327488e-10, -0.0049576648, -0.009400092, 0.047306485)
 mesh = SubResource("BoxMesh_dt7ya")
 script = ExtResource("17_n5fg8")
+ledRenderer = NodePath(".")
 disarmMaterial = ExtResource("16_5u3l5")
 takeoffMaterial = ExtResource("18_l4phi")
 hoverMaterial = ExtResource("19_piv2x")
 landingMaterial = ExtResource("20_yanwn")
 takeoffBlinkInterval = 0.2
 landingBlinkInterval = 0.2
-ledRenderer = NodePath(".")
 
-[node name="LED_Front" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+[node name="LED_Front" type="MeshInstance3D" parent="DRAvatar2" unique_id=72966029 node_paths=PackedStringArray("ledRenderer")]
 transform = Transform3D(0.02, 0, 0, 0, 0.007, 0, 0, 0, 0.025, 0, 0.019269645, -0.06971371)
 mesh = SubResource("BoxMesh_dt7ya")
 script = ExtResource("17_n5fg8")
+ledRenderer = NodePath(".")
 disarmMaterial = ExtResource("16_5u3l5")
 takeoffMaterial = ExtResource("18_l4phi")
 hoverMaterial = ExtResource("19_piv2x")
 landingMaterial = ExtResource("20_yanwn")
 takeoffBlinkInterval = 0.2
 landingBlinkInterval = 0.2
-ledRenderer = NodePath(".")
 
-[node name="LED_FlightModeBack" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+[node name="LED_FlightModeBack" type="MeshInstance3D" parent="DRAvatar2" unique_id=985950042 node_paths=PackedStringArray("ledRenderer")]
 transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0.014299899, 0.040466093)
 mesh = SubResource("BoxMesh_dt7ya")
 script = ExtResource("21_htewp")
+ledRenderer = NodePath(".")
 attiMaterial = ExtResource("18_l4phi")
 gpsMaterial = ExtResource("22_586ah")
 offMaterial = ExtResource("16_5u3l5")
 attiBlinkInterval = 0.2
-ledRenderer = NodePath(".")
 
-[node name="LED_FlightModeFront" type="MeshInstance3D" parent="DRAvatar2" node_paths=PackedStringArray("ledRenderer")]
+[node name="LED_FlightModeFront" type="MeshInstance3D" parent="DRAvatar2" unique_id=2057056905 node_paths=PackedStringArray("ledRenderer")]
 transform = Transform3D(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.004, 0, 0.019458268, -0.083477855)
 mesh = SubResource("BoxMesh_dt7ya")
 script = ExtResource("21_htewp")
+ledRenderer = NodePath(".")
 attiMaterial = ExtResource("18_l4phi")
 gpsMaterial = ExtResource("22_586ah")
 offMaterial = ExtResource("16_5u3l5")
 attiBlinkInterval = 0.2
-ledRenderer = NodePath(".")
 
-[node name="GUI" type="Node3D" parent="."]
+[node name="GUI" type="Node3D" parent="." unique_id=561515843]
 visible = false
 script = ExtResource("23_b8lrn")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="GUI"]
+[node name="CanvasLayer" type="CanvasLayer" parent="GUI" unique_id=922408693]
 
-[node name="Control" type="Control" parent="GUI/CanvasLayer"]
+[node name="Control" type="Control" parent="GUI/CanvasLayer" unique_id=1184171576]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Button_Start" type="Button" parent="GUI/CanvasLayer/Control"]
+[node name="Button_Start" type="Button" parent="GUI/CanvasLayer/Control" unique_id=194620114]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -301,7 +302,7 @@ offset_bottom = 43.0
 grow_horizontal = 2
 text = "START"
 
-[node name="Label_SimTimeH" type="Label" parent="GUI/CanvasLayer/Control"]
+[node name="Label_SimTimeH" type="Label" parent="GUI/CanvasLayer/Control" unique_id=1962432446]
 layout_mode = 0
 offset_left = 208.0
 offset_top = 12.0
@@ -310,7 +311,7 @@ offset_bottom = 35.0
 text = "Simulation Time [Sec] : "
 script = ExtResource("24_rtoji")
 
-[node name="InfoPanel" type="Node3D" parent="GUI/CanvasLayer" node_paths=PackedStringArray("batteryProgressBar", "fullVoltageText", "currVoltageText", "percentageText", "tempText", "pressureText", "battery")]
+[node name="InfoPanel" type="Node3D" parent="GUI/CanvasLayer" unique_id=1167562104 node_paths=PackedStringArray("batteryProgressBar", "fullVoltageText", "currVoltageText", "percentageText", "tempText", "pressureText", "battery")]
 script = ExtResource("25_61e2k")
 batteryProgressBar = NodePath("TextureProgressBar_battery")
 fullVoltageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_fullVoltage")
@@ -320,7 +321,7 @@ tempText = NodePath("HBoxContainer/VBoxContainer_value/lbl_temperature")
 pressureText = NodePath("HBoxContainer/VBoxContainer_value/lbl_pressure")
 battery = NodePath("../../../DRAvatar2")
 
-[node name="TextureProgressBar_battery" type="TextureProgressBar" parent="GUI/CanvasLayer/InfoPanel"]
+[node name="TextureProgressBar_battery" type="TextureProgressBar" parent="GUI/CanvasLayer/InfoPanel" unique_id=397259360]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -337,7 +338,7 @@ nine_patch_stretch = true
 texture_under = ExtResource("26_kdru8")
 texture_progress = ExtResource("27_o2gd7")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GUI/CanvasLayer/InfoPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/CanvasLayer/InfoPanel" unique_id=530741697]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -348,11 +349,11 @@ offset_bottom = 64.0
 grow_vertical = 0
 size_flags_horizontal = 8
 
-[node name="VBoxContainer_value" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer"]
+[node name="VBoxContainer_value" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer" unique_id=560883601]
 layout_mode = 2
 theme_override_constants/separation = -3
 
-[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value" unique_id=892070540]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -360,7 +361,7 @@ text = "0.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value" unique_id=1928844590]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -368,7 +369,7 @@ text = "0.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value" unique_id=233075839]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -376,7 +377,7 @@ text = "0.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value" unique_id=158433760]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -384,7 +385,7 @@ text = "0.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value"]
+[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_value" unique_id=193546526]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -392,11 +393,11 @@ text = "0.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="VBoxContainer_unity" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer"]
+[node name="VBoxContainer_unity" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer" unique_id=716686818]
 layout_mode = 2
 theme_override_constants/separation = -3
 
-[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+[node name="lbl_fullVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity" unique_id=577234750]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -404,7 +405,7 @@ text = "V"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+[node name="lbl_currVoltage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity" unique_id=261131846]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -412,7 +413,7 @@ text = "V"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+[node name="lbl_percentage" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity" unique_id=1471888981]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -420,7 +421,7 @@ text = "%"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+[node name="lbl_temperature" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity" unique_id=1347285926]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -428,7 +429,7 @@ text = "℃"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity"]
+[node name="lbl_pressure" type="Label" parent="GUI/CanvasLayer/InfoPanel/HBoxContainer/VBoxContainer_unity" unique_id=817193074]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 15
@@ -436,7 +437,7 @@ text = "A"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel" node_paths=PackedStringArray("drone", "altitudeText", "positionText", "velocityText", "distanceText")]
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer/InfoPanel" unique_id=161906161 node_paths=PackedStringArray("drone", "altitudeText", "positionText", "velocityText", "distanceText")]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -454,35 +455,35 @@ positionText = NodePath("lbl_distance")
 velocityText = NodePath("lbl_position")
 distanceText = NodePath("lbl_velocity")
 
-[node name="lbl_altitude" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+[node name="lbl_altitude" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer" unique_id=98862513]
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 15
 text = "Altitude(m):"
 vertical_alignment = 1
 
-[node name="lbl_distance" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+[node name="lbl_distance" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer" unique_id=1673985259]
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 15
 text = "Distance(m):"
 vertical_alignment = 1
 
-[node name="lbl_position" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+[node name="lbl_position" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer" unique_id=1188243338]
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 15
 text = "Position(m):"
 vertical_alignment = 1
 
-[node name="lbl_velocity" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer"]
+[node name="lbl_velocity" type="Label" parent="GUI/CanvasLayer/InfoPanel/VBoxContainer" unique_id=192786131]
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 15
 text = "Velocity(m/s):"
 vertical_alignment = 1
 
-[node name="DroneMap" type="Control" parent="GUI/CanvasLayer/InfoPanel" node_paths=PackedStringArray("drone", "map", "droneIcon", "droneRollIcon", "dronePitchIcon", "scaleText")]
+[node name="DroneMap" type="Control" parent="GUI/CanvasLayer/InfoPanel" unique_id=1214879660 node_paths=PackedStringArray("drone", "map", "droneIcon", "droneRollIcon", "dronePitchIcon", "scaleText")]
 layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
@@ -494,15 +495,15 @@ offset_bottom = -15.0
 grow_vertical = 0
 size_flags_horizontal = 8
 script = ExtResource("29_43wo4")
-map_adjust_scale = 5.0
 drone = NodePath("../../../../DRAvatar2")
 map = NodePath("Map")
 droneIcon = NodePath("DroneIcon")
 droneRollIcon = NodePath("RollIcon")
 dronePitchIcon = NodePath("PitchIcon/Pitch")
 scaleText = NodePath("Label_scale")
+map_adjust_scale = 5.0
 
-[node name="Back" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="Back" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=2066098659]
 layout_mode = 0
 offset_left = 5.0
 offset_top = 10.0
@@ -512,7 +513,7 @@ texture = ExtResource("30_hi0jk")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Map" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="Map" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=65788009]
 layout_mode = 0
 offset_left = 5.0
 offset_top = 10.0
@@ -522,7 +523,7 @@ texture = ExtResource("31_q14kd")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="DroneIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="DroneIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=706790041]
 layout_mode = 0
 offset_left = 99.0
 offset_top = 97.0
@@ -533,7 +534,7 @@ texture = ExtResource("32_qa8oq")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Label_scale" type="Label" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="Label_scale" type="Label" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=725842878]
 layout_mode = 0
 offset_left = 138.0
 offset_top = 11.0
@@ -541,7 +542,7 @@ offset_right = 178.0
 offset_bottom = 34.0
 text = "1/1"
 
-[node name="RollIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="RollIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=2005645748]
 layout_mode = 0
 offset_left = 64.0
 offset_top = 105.0
@@ -552,7 +553,7 @@ texture = ExtResource("33_hikm3")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="PitchIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap"]
+[node name="PitchIcon" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap" unique_id=874673428]
 layout_mode = 0
 offset_left = 197.0
 offset_top = 12.0
@@ -561,7 +562,7 @@ offset_bottom = 212.0
 texture = ExtResource("34_ofjvk")
 expand_mode = 1
 
-[node name="Pitch" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap/PitchIcon"]
+[node name="Pitch" type="TextureRect" parent="GUI/CanvasLayer/InfoPanel/DroneMap/PitchIcon" unique_id=694874324]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 98.0
@@ -571,7 +572,7 @@ pivot_offset = Vector2(9, 2.5)
 texture = ExtResource("35_dncf7")
 expand_mode = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/CanvasLayer" unique_id=1248056450]
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
@@ -585,27 +586,27 @@ grow_horizontal = 0
 grow_vertical = 2
 scale = Vector2(0.5, 0.5)
 
-[node name="SubViewportContainer_topCam" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer"]
+[node name="SubViewportContainer_topCam" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer" unique_id=246949045]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="SubViewport" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam"]
+[node name="SubViewport" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam" unique_id=1370119957]
 handle_input_locally = false
 size = Vector2i(640, 480)
 render_target_update_mode = 4
 
-[node name="Camera3D_top" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport" node_paths=PackedStringArray("DroneNode")]
+[node name="Camera3D_top" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport" unique_id=545634014 node_paths=PackedStringArray("DroneNode")]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.01253812, -0.023392752)
 projection = 1
 current = true
 size = 0.5
 near = 0.01
 script = ExtResource("36_v8m31")
+DroneNode = NodePath("../../../../../../DRAvatar2")
 Offset = Vector3(0, 0.013, 0)
 CameraRotate = 90.0
-DroneNode = NodePath("../../../../../../DRAvatar2")
 
-[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport"]
+[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_topCam/SubViewport" unique_id=2024954018]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -619,27 +620,27 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("37_bduti")
 
-[node name="SubViewportContainer_front" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer"]
+[node name="SubViewportContainer_front" type="SubViewportContainer" parent="GUI/CanvasLayer/VBoxContainer" unique_id=1809957026]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="SubViewport2" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front"]
+[node name="SubViewport2" type="SubViewport" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front" unique_id=1703625384]
 handle_input_locally = false
 size = Vector2i(640, 480)
 render_target_update_mode = 4
 
-[node name="Camera3D_front" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2" node_paths=PackedStringArray("DroneNode")]
+[node name="Camera3D_front" type="Camera3D" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2" unique_id=863739534 node_paths=PackedStringArray("DroneNode")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.049293444, -0.1)
 projection = 1
 current = true
 size = 0.3
 near = 0.01
 script = ExtResource("36_v8m31")
+DroneNode = NodePath("../../../../../../DRAvatar2")
 Offset = Vector3(0, 0, -0.1)
 CameraRotate = 0.0
-DroneNode = NodePath("../../../../../../DRAvatar2")
 
-[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2"]
+[node name="TextureRect" type="TextureRect" parent="GUI/CanvasLayer/VBoxContainer/SubViewportContainer_front/SubViewport2" unique_id=1365799326]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -653,58 +654,58 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("37_bduti")
 
-[node name="Ground" type="MeshInstance3D" parent="."]
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=1762195904]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.059541807, 0)
 visible = false
 mesh = SubResource("PlaneMesh_dt7ya")
 
-[node name="baggage1" type="RigidBody3D" parent="."]
+[node name="baggage1" type="RigidBody3D" parent="." unique_id=2022416243]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5369355, 0.30673197, -0.57743764)
 
-[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage1"]
+[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage1" unique_id=559671516]
 mesh = SubResource("BoxMesh_ywsav")
 skeleton = NodePath("../..")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage1"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage1" unique_id=638999635]
 shape = SubResource("BoxShape3D_dt7ya")
 debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
 
-[node name="baggage2" type="RigidBody3D" parent="."]
+[node name="baggage2" type="RigidBody3D" parent="." unique_id=1334673041]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32320094, 0.05522746, -0.57743764)
 
-[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage2"]
+[node name="baggage1_mesh" type="MeshInstance3D" parent="baggage2" unique_id=1512838708]
 mesh = SubResource("BoxMesh_ywsav")
 skeleton = NodePath("../..")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="baggage2" unique_id=305325518]
 shape = SubResource("BoxShape3D_dt7ya")
 debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
 
-[node name="Obstacle1" type="RigidBody3D" parent="."]
+[node name="Obstacle1" type="RigidBody3D" parent="." unique_id=195622312]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07965222, 0.7856939, -2.8594875)
 mass = 1000.0
 
-[node name="baggage1_mesh" type="MeshInstance3D" parent="Obstacle1"]
+[node name="baggage1_mesh" type="MeshInstance3D" parent="Obstacle1" unique_id=411367610]
 mesh = SubResource("BoxMesh_d3neh")
 skeleton = NodePath("../..")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacle1"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacle1" unique_id=1012014574]
 shape = SubResource("BoxShape3D_fcpor")
 debug_color = Color(0.92103213, 0.17624736, 0.5484593, 0.41960785)
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=13335313]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.060149178, -9.7048855)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=978379257]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8474503, -0.10000001, -1.2446606e-07)
 mesh = SubResource("BoxMesh_am0b1")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1002953058]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_d3neh")
 debug_color = Color(0.85617214, 0.00075526774, 0.88560927, 0.41960785)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2108110333]
 environment = SubResource("Environment_am0b1")
 
 [connection signal="pressed" from="GUI/CanvasLayer/Control/Button_Start" to="GUI" method="OnButtonClick"]

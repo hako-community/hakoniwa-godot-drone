@@ -1,6 +1,46 @@
 # hakoniwa-godot-drone
 このリポジトリでは、Godot上で箱庭ドローンの物理モデルをビジュアライズ・操作できる環境を提供します。
 
+## 使い方
+箱庭コアと連携動作するライブラリ類は自動的に読まないので、hakoniwa-godot-droneディレクトリの直下に
+プラグインのディレクトリからコピーしてください。
+
+### プラグインのディレクトリ構成
+
+クロスプラットフォーム対応は、[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)と同様です。
+```tree
+├── Plugins
+│   ├── libhako_service_c
+│   │   ├── Android
+│   │   │   └── ARM64
+│   │   ├── Linux
+│   │   │   └── x86_64
+│   │   ├── Windows
+│   │   │   └── x86_64
+│   │   └── macOS
+│   │       └── ARM64
+│   └── libshakoc
+│       ├── arm64
+│       ├── linux
+│       └── win
+```
+
+### プラグインからのコピーする際の注意
+
+将来的には自動的に読み込めるように修正予定
+
+‐ Windowsの場合
+以下の名前でコピーしてください。
+
+libhako_service_c.dll
+libshakoc.dll
+
+- Macの場合
+以下の名前でコピーしてください。
+
+libhako_service_c.dylib
+libshakoc.dylib
+
 ## ディレクトリ構成
 
 このプロジェクトのディレクトリ構成は以下のとおりです：
@@ -30,27 +70,7 @@
 
 ドローンの基本的な飛行テストができる[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)のGodot環境への移植版になります。
 
-## プラグインのディレクトリ構成
-
-クロスプラットフォーム対応は、[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)と同様です。
-```tree
-├── Plugins
-│   ├── libhako_service_c
-│   │   ├── Android
-│   │   │   └── ARM64
-│   │   ├── Linux
-│   │   │   └── x86_64
-│   │   ├── Windows
-│   │   │   └── x86_64
-│   │   └── macOS
-│   │       └── ARM64
-│   └── libshakoc
-│       ├── arm64
-│       ├── linux
-│       └── win
-```
-
-# サンプル・モデル
+# hakoniwa-godot-droneでの利用モデル
 
 このプロジェクトでは、以下のモデルが含まれています：
 

@@ -30,24 +30,28 @@
 将来的には自動的に読み込めるように修正予定
 
 ‐ Windowsの場合
+
 以下の名前でコピーしてください。
 
-libhako_service_c.dll
-libshakoc.dll
+  - libhako_service_c.dll
+  - libshakoc.dll
 
 - Macの場合
+
 以下の名前でコピーしてください。
 
-libhako_service_c.dylib
-libshakoc.dylib
+  - libhako_service_c.dylib
+  - libshakoc.dylib
 
 ## 動作確認Version
 
 - Windows
-Godot_v4.6-stable_mono
+
+  - Godot_v4.6-stable_mono
 
 - Mac
-Windowsと同様
+
+  - Windowsと同様4.6
 
 
 ## ディレクトリ構成

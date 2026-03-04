@@ -29,14 +29,14 @@
 
 将来的には自動的に読み込めるように修正予定
 
-‐ Windowsの場合
+#### Windowsの場合
 
 以下の名前でコピーしてください。
 
   - libhako_service_c.dll
   - libshakoc.dll
 
-- Macの場合
+#### Macの場合
 
 以下の名前でコピーしてください。
 

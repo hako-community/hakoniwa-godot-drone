@@ -41,6 +41,15 @@ libshakoc.dll
 libhako_service_c.dylib
 libshakoc.dylib
 
+## 動作確認Version
+
+- Windows
+Godot_v4.6-stable_mono
+
+- Mac
+Windowsと同様
+
+
 ## ディレクトリ構成
 
 このプロジェクトのディレクトリ構成は以下のとおりです：

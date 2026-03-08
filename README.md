@@ -43,6 +43,12 @@
   - libhako_service_c.dylib
   - libshakoc.dylib
 
+## 箱庭ドローンシミュレータ Godot版の利用方法
+
+インストール、操作方法は、以下のドキュメントを公開していますので、参照してください。
+
+[箱庭ドローンシミュレータ Godot版 操作方法](https://github.com/buildko89/documents/blob/main/hakodoc/howto-doc/hakowithgodot.md)
+
 ## 動作確認Version
 
 - Windows

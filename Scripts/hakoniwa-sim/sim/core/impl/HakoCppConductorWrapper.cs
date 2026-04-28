@@ -7,11 +7,7 @@ namespace hakoniwa.sim.core.impl
 {
     public static class HakoConductor
     {
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        private const string DllName = "conductor"; // Windows用DLL名
-#else
-        private const string DllName = "libconductor"; // Ubuntu/Mac用DLL名
-#endif
+        private const string DllName = "conductor";
 
         /*
          * Start the Conductor

@@ -7,9 +7,7 @@ namespace Hakoniwa.Drone.Service
     // クラス名を変更 (任意)
     public static class HakoService
     {
-        // #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN // この部分はGodotではOS判定方法が異なるが、Macでは不要
-        private const string DllName = "libhako_service_c"; // Ubuntu, Mac
-        // #endif
+        private const string DllName = "hako_service_c";
 
         /*
         * Initialization and Control

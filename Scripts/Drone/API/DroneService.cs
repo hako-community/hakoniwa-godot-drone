@@ -6,11 +6,7 @@ namespace hakoniwa.drone.service
 {
     public static class DroneServiceRC
     {
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        private const string DllName = "hako_service_c"; // Windows
-#else
-        private const string DllName = "libhako_service_c"; // Ubuntu, Mac
-#endif
+        private const string DllName = "hako_service_c";
         /*
          * Initialization and Control
          */

@@ -7,11 +7,7 @@ namespace hakoniwa.sim.core.impl
 {
     public class HakoCppWrapper
     {
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         private const string DllName = "shakoc";
-#else
-        private const string DllName = "libshakoc";
-#endif
         public delegate void HakoAssetCblkStart();
         public delegate void HakoAssetCblkStop();
         public delegate void HakoAssetCblkReset();

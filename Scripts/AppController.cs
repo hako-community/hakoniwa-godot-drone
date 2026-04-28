@@ -1,8 +1,14 @@
 using Godot;
 using System;
+using Hakoniwa.Core.Utils;
 
 public partial class AppController : Node
 {
+    public override void _EnterTree()
+    {
+        HakoLibLoader.Register();
+    }
+
     public override void _Ready()
     {
         // プロセス全体で Ctrl+C (SIGINT) を監視する

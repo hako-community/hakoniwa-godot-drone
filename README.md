@@ -25,24 +25,6 @@
 │       └── win
 ```
 
-### プラグインからのコピーする際の注意
-
-将来的には自動的に読み込めるように修正予定
-
-#### Windowsの場合
-
-以下の名前でコピーしてください。
-
-  - libhako_service_c.dll
-  - libshakoc.dll
-
-#### Macの場合
-
-以下の名前でコピーしてください。
-
-  - libhako_service_c.dylib
-  - libshakoc.dylib
-
 ## 箱庭ドローンシミュレータ Godot版の利用方法
 
 インストール、操作方法は、以下のドキュメントを公開していますので、参照してください。
@@ -76,7 +58,7 @@
 │   │   ├── HakoPdu
 │   │   └── HakoSim
 │   ├── Interfaces
-│   ├── Unity
+│   ├── Componets
 │   ├── hakoniwa-pdu
 │   └── hakoniwa-sim
 ├── addons

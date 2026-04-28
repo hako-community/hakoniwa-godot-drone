@@ -2,7 +2,7 @@ using System;
 using hakoniwa.objects.core.sensors;
 using hakoniwa.pdu.interfaces;
 using hakoniwa.pdu.msgs.sensor_msgs;
-using hakoniwa.pdu.unity;
+using hakoniwa.pdu.godot;
 using hakoniwa.sim;
 using Godot;
 

@@ -1,7 +1,7 @@
 using System;
 using hakoniwa.objects.core.sensors;
 using hakoniwa.pdu.interfaces;
-using hakoniwa.pdu.unity;
+using hakoniwa.pdu.godot;
 using hakoniwa.sim;
 using hakoniwa.sim.core;
 using Godot;

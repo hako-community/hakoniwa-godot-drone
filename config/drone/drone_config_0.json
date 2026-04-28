@@ -41,7 +41,7 @@
             "enable_disturbance": true,
             "manual_control": false,
             "airFrictionCoefficient": [
-                0.5,
+                0.7,
                 0.0
             ],
             "inertia": [

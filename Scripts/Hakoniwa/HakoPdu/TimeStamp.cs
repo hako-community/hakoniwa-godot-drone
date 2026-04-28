@@ -1,6 +1,6 @@
 using System;
 
-namespace hakoniwa.pdu.unity
+namespace hakoniwa.pdu.godot
 {
     public class TimeStamp
     {

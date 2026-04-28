@@ -7,22 +7,18 @@
 
 ### プラグインのディレクトリ構成
 
-クロスプラットフォーム対応は、[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)と同様です。
+クロスプラットフォーム対応は、[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)と同様です。ディレクトリ構成は違っています。hakoniwa-unity-droneは、一部の共有ライブラリが`Unity Package Manager`で管理されていますが、hakoniwa-godot-droneは、addonでの管理がされていないため必要なライブラリを配置しています。
+
 ```tree
-├── Plugins
-│   ├── libhako_service_c
-│   │   ├── Android
-│   │   │   └── ARM64
-│   │   ├── Linux
-│   │   │   └── x86_64
-│   │   ├── Windows
-│   │   │   └── x86_64
-│   │   └── macOS
-│   │       └── ARM64
-│   └── libshakoc
-│       ├── arm64
-│       ├── linux
-│       └── win
+Plugins/
+├── Android
+│   └── ARM64
+├── Linux
+│   └── x86_64
+├── Windows
+│   └── x86_64
+└── macOS
+    └── ARM64
 ```
 
 ## 箱庭ドローンシミュレータ Godot版の利用方法

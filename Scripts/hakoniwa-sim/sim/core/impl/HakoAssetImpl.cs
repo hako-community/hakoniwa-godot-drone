@@ -78,6 +78,8 @@ namespace hakoniwa.sim.core.impl
             {
                 obj.EventStart();
             }
+            // 動作版 _handle_start_event に合わせ、start_feedback の前に write_pdu_done を送る
+            HakoCppWrapper.asset_notify_write_pdu_done(my_asset_name);
             HakoCppWrapper.asset_start_feedback(my_asset_name, true);
         }
         private void StopCallback()
@@ -98,7 +100,7 @@ namespace hakoniwa.sim.core.impl
         }
         public bool Execute()
         {
-            //for heartbeat 
+            //for heartbeat
             long w_time = HakoCppWrapper.get_wrold_time();
             HakoCppWrapper.asset_notify_simtime(my_asset_name, w_time);
             this.PollEvent();
@@ -114,6 +116,22 @@ namespace hakoniwa.sim.core.impl
             if (HakoCppWrapper.asset_is_pdu_created() == false)
             {
                 /* nothing to do */
+                return false;
+            }
+            // [F1] 動作版(hakoniwa-armpi の hakoniwa_simulation_node.gd _tick_internal)に合わせ、
+            //      per-asset の pdu_sync_mode を global の simulation_mode より「先」に判定する。
+            //      従来は simulation_mode(常にTrue)を先に見たため sync 分岐に到達せず
+            //      asset_notify_write_pdu_done() が一度も呼ばれず、conductor が PDU 同期バリアを
+            //      解放できずに world 時刻が 0 から進まなかった（wtime=0 デッドロック）。
+            //      sync 時は PDU 受信(EventTick)してから write_pdu_done を必ず送る。
+            else if (HakoCppWrapper.asset_is_pdu_sync_mode(my_asset_name))
+            {
+                hako_pdu.EventTick();
+                foreach (var obj in hakoObectList)
+                {
+                    obj.EventTick();
+                }
+                HakoCppWrapper.asset_notify_write_pdu_done(my_asset_name);
                 return false;
             }
             else if (HakoCppWrapper.asset_is_simulation_mode())
@@ -137,12 +155,6 @@ namespace hakoniwa.sim.core.impl
                     obj.EventTick();
                 }
                 return true;
-            }
-            else if (HakoCppWrapper.asset_is_pdu_sync_mode(my_asset_name))
-            {
-                //GD.Print("Can not do simulation because sync mode...");
-                HakoCppWrapper.asset_notify_write_pdu_done(my_asset_name);
-                return false;
             }
             //GD.Print("Can not do simulation why??");
             return false;

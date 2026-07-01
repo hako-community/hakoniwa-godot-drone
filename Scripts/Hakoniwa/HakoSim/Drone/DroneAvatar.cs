@@ -55,6 +55,9 @@ namespace hakoniwa.drone.sim
         private GameController gameController;
         private DroneConfig droneConfig;
         private List<ILiDAR3DController> lidars;
+        private List<IRadar3DController> radars;
+        private RadarPointCloudVisualizer radarVisualizer;
+        private LiDARPointCloudVisualizer lidarVisualizer;
         private Wind wind;
         
         [Export]
@@ -128,6 +131,33 @@ namespace hakoniwa.drone.sim
             droneConfig = NodeUtil.FindNodeByInterface<DroneConfig>(this);
 
             lidars = FindComponents<ILiDAR3DController>();
+
+            // Pattern A toggle: when set, hakoniwa-mujoco-sensor produces the point
+            // clouds and Godot only reads/visualizes them (no self ray cast).
+            bool externalSensing = OS.GetEnvironment("HAKO_EXTERNAL_SENSING") == "1";
+
+            // R3/R4: Godot Pattern-B radar. Use scene-provided radars if present,
+            // otherwise create one programmatically (avoids editing the .tscn).
+            radars = FindComponents<IRadar3DController>();
+            if (radars == null || radars.Count == 0)
+            {
+                var radarNode = new Default3DRadarController {
+                    Name = "RadarAuto",
+                    HorizontalFOV = 90f, VerticalFOV = 50f, Range = 30f,
+                    PointsPerSecond = 3000, UpdateRateHz = 10,
+                    ExternalSensing = externalSensing
+                };
+                AddChild(radarNode);
+                radars = new List<IRadar3DController> { radarNode };
+                radarVisualizer = new RadarPointCloudVisualizer {
+                    Name = "RadarVizAuto",
+                    HorizontalFOV = 90f, VerticalFOV = 50f, Range = 30f
+                };
+                AddChild(radarVisualizer);
+                // Pattern B: read the scan directly from the in-process controller.
+                // Pattern A: leave source null so the visualizer reads radar_points via PDU.
+                if (!externalSensing) radarVisualizer.SetSource(radarNode);
+            }
 
             wind = NodeUtil.FindNodeByInterface<Wind>(this);
 
@@ -205,9 +235,53 @@ namespace hakoniwa.drone.sim
                     GD.Print("SetLidarPosition : "+ lidars.Count + " lidars found.");
                     droneConfig.SetLidarPosition(robotName);
                 }
-                foreach(var lidar in lidars) lidar.DoInitialize(robotName, hakoPdu.GetPduManager());
+                foreach(var lidar in lidars)
+                {
+                    if (externalSensing) lidar.ExternalSensing = true;
+                    if (lidar.ExternalSensing)
+                    {
+                        // Pattern A: hakoniwa-mujoco-sensor publishes lidar_points.
+                        // Declare for READ so HakoCommunicationService.EventTick pulls
+                        // it from SHM, then visualize it from the PDU.
+                        ret = hakoPdu.DeclarePduForRead(robotName, Default3DLiDARController.pdu_name_lidar_point_cloud);
+                        if (!ret) throw new ArgumentException($"Can not declare pdu for read: {robotName} {Default3DLiDARController.pdu_name_lidar_point_cloud}");
+                        if (lidarVisualizer == null)
+                        {
+                            lidarVisualizer = new LiDARPointCloudVisualizer { Name = "LiDARVizAuto" };
+                            // Parent under the sensor node so sensor-local points
+                            // render at the drone's LiDAR mount pose.
+                            (lidar as Node3D)?.AddChild(lidarVisualizer);
+                            lidarVisualizer.DoInitialize(robotName, hakoPdu.GetPduManager());
+                        }
+                        GD.Print("LiDAR Pattern A: reading lidar_points from mujoco-sensor.");
+                    }
+                    lidar.DoInitialize(robotName, hakoPdu.GetPduManager());
+                }
             }
-            
+
+            if (radars != null && radars.Count > 0)
+            {
+                foreach(var radar in radars)
+                {
+                    if (externalSensing) radar.ExternalSensing = true;
+                    if (radar.ExternalSensing)
+                    {
+                        // Pattern A: mujoco-sensor publishes radar_points; declare for READ.
+                        ret = hakoPdu.DeclarePduForRead(robotName, Default3DRadarController.pdu_name_radar_points);
+                        if (!ret) throw new ArgumentException($"Can not declare pdu for read: {robotName} {Default3DRadarController.pdu_name_radar_points}");
+                    }
+                    // Pattern B keeps the pdudef-driven CreateNamedPdu/WriteNamedPdu path.
+                    radar.DoInitialize(robotName, hakoPdu.GetPduManager());
+                }
+                if (radarVisualizer != null) radarVisualizer.DoInitialize(robotName, hakoPdu.GetPduManager());
+                GD.Print("Radar(R3/R4) initialized: " + radars.Count + " radar(s)");
+            }
+
+            // Optional Pattern-A alignment aid: reconstruct the sensed room (env.xml
+            // source OBB) in Godot's world so the point cloud can be checked against
+            // the walls it was measured from. No-op unless HAKO_ENV_OBB is set.
+            hakoniwa.env.EnvRoomBuilder.BuildIfRequested(GetParent());
+
             if (wind != null)
             {
                 ret = hakoPdu.DeclarePduForRead(robotName, pdu_name_disturbance);
@@ -366,6 +440,9 @@ namespace hakoniwa.drone.sim
             if (cameraController != null) cameraController.DoControl(pduManager);
             if (baggageGrabber != null) baggageGrabber.DoControl(pduManager);
             if (lidars != null) foreach(var lidar in lidars) lidar.DoControl(pduManager);
+            if (lidarVisualizer != null) lidarVisualizer.DoControl(pduManager);
+            if (radars != null) foreach(var radar in radars) radar.DoControl(pduManager);
+            if (radarVisualizer != null) radarVisualizer.DoControl(pduManager);
 
             if (wind != null)
             {

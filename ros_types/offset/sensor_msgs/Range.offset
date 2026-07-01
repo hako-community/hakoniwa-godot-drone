@@ -1,0 +1,6 @@
+single:struct:header:std_msgs/Header:0:136
+single:primitive:radiation_type:uint8:136:1
+single:primitive:field_of_view:float32:140:4
+single:primitive:min_range:float32:144:4
+single:primitive:max_range:float32:148:4
+single:primitive:range:float32:152:4

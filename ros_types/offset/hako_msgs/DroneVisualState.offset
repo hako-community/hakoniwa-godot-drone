@@ -1,0 +1,7 @@
+single:primitive:x:float32:0:4
+single:primitive:y:float32:4:4
+single:primitive:z:float32:8:4
+single:primitive:roll:float32:12:4
+single:primitive:pitch:float32:16:4
+single:primitive:yaw:float32:20:4
+varray:primitive:pwm_duty:float32:24:4:8

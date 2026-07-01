@@ -1,0 +1,3 @@
+single:struct:header:std_msgs/Header:0:136
+single:struct:magnetic_field:geometry_msgs/Vector3:136:24
+array:primitive:magnetic_field_covariance:float64:160:72:9

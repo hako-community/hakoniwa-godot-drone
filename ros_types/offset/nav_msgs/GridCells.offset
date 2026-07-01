@@ -1,0 +1,4 @@
+single:struct:header:std_msgs/Header:0:136
+single:primitive:cell_width:float32:136:4
+single:primitive:cell_height:float32:140:4
+varray:struct:cells:geometry_msgs/Point:144:24:8

@@ -1,0 +1,5 @@
+single:struct:map_load_time:builtin_interfaces/Time:0:8
+single:primitive:resolution:float32:8:4
+single:primitive:width:uint32:12:4
+single:primitive:height:uint32:16:4
+single:struct:origin:geometry_msgs/Pose:24:56

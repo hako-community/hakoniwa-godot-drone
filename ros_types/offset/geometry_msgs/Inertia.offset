@@ -1,0 +1,8 @@
+single:primitive:m:float64:0:8
+single:struct:com:geometry_msgs/Vector3:8:24
+single:primitive:ixx:float64:32:8
+single:primitive:ixy:float64:40:8
+single:primitive:ixz:float64:48:8
+single:primitive:iyy:float64:56:8
+single:primitive:iyz:float64:64:8
+single:primitive:izz:float64:72:8

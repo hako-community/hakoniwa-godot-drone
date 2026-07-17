@@ -1,0 +1,16 @@
+single:struct:header:std_msgs/Header:0:136
+single:primitive:voltage:float32:136:4
+single:primitive:temperature:float32:140:4
+single:primitive:current:float32:144:4
+single:primitive:charge:float32:148:4
+single:primitive:capacity:float32:152:4
+single:primitive:design_capacity:float32:156:4
+single:primitive:percentage:float32:160:4
+single:primitive:power_supply_status:uint8:164:1
+single:primitive:power_supply_health:uint8:165:1
+single:primitive:power_supply_technology:uint8:166:1
+single:primitive:present:bool:168:4
+varray:primitive:cell_voltage:float32:172:4:8
+varray:primitive:cell_temperature:float32:180:4:8
+single:primitive:location:string:188:128
+single:primitive:serial_number:string:316:128

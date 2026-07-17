@@ -1,0 +1,3 @@
+single:struct:header:std_msgs/Header:0:136
+single:struct:info:MapMetaData:136:80
+varray:primitive:data:int8:216:1:8

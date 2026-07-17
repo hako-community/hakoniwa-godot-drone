@@ -38,6 +38,9 @@ namespace hakoniwa.objects.core.sensors
     {
         public bool SetParams(LiDAR3DParams param);
         public LiDAR3DParams GetParams();
+        // Pattern A (true): hakoniwa-mujoco-sensor produces lidar_points; Godot
+        // only reads/visualizes and must not ray cast or publish itself.
+        public bool ExternalSensing { get; set; }
         public void DoInitialize(string robot_name, IPduManager pduManager);
         public void DoControl(IPduManager pduManager);
     }
@@ -64,6 +67,13 @@ namespace hakoniwa.objects.core.sensors
         public float HorizontalFOVEnd = 20f;
         [Export]
         public bool DrawDebugPoints = true;
+
+        // M4 Pattern A: when true, hakoniwa-mujoco-sensor performs the sensing
+        // (mj_ray over env.xml) and publishes lidar_points; Godot then only
+        // visualizes and must NOT ray cast / publish itself. Set by the launcher
+        // when an env.xml exists for the scene (env XML present -> Pattern A).
+        [Export]
+        public bool ExternalSensing { get; set; } = false;
 
         public const int MaxHeight = 61;
         public const int MaxWidth = 181;
@@ -254,6 +264,14 @@ namespace hakoniwa.objects.core.sensors
             GD.Print("Initialize Default3DLiDARController for " + robot_name);
             this.robotName = robot_name;
             this.sensor = this;
+            if (this.ExternalSensing)
+            {
+                // Pattern A: hakoniwa-mujoco-sensor produces lidar_points. Godot
+                // neither scans nor publishes here (the PDU is declared for READ
+                // by DroneAvatar and rendered by LiDARPointCloudVisualizer).
+                GD.Print("Default3DLiDARController: ExternalSensing=true -> skip self scan/publish.");
+                return;
+            }
             this.width = Mathf.CeilToInt((HorizontalFOVEnd - HorizontalFOVStart) / deg_interval_h) + 1;
             this.height = Mathf.CeilToInt((VerticalFOVUpper - VerticalFOVLower) / deg_interval_v) + 1;
             this.row_step = this.width * this.point_step;
@@ -287,7 +305,11 @@ namespace hakoniwa.objects.core.sensors
         public void DoControl(IPduManager pduManager)
         {
             if (!this.Enabled) return;
-            
+
+            // Pattern A: sensing is done by hakoniwa-mujoco-sensor over env.xml.
+            // Skip Godot-side ray casting / publishing; Godot only visualizes.
+            if (this.ExternalSensing) return;
+
             this.count++;
             if (this.count < this.update_cycle) return;
             this.count = 0;

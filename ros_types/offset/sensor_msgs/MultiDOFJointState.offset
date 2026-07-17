@@ -1,0 +1,5 @@
+single:struct:header:std_msgs/Header:0:136
+varray:primitive:joint_names:string:136:128:8
+varray:struct:transforms:geometry_msgs/Transform:144:56:8
+varray:struct:twist:geometry_msgs/Twist:152:48:8
+varray:struct:wrench:geometry_msgs/Wrench:160:48:8

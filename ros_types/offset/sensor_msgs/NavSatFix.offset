@@ -1,0 +1,7 @@
+single:struct:header:std_msgs/Header:0:136
+single:struct:status:NavSatStatus:136:4
+single:primitive:latitude:float64:144:8
+single:primitive:longitude:float64:152:8
+single:primitive:altitude:float64:160:8
+array:primitive:position_covariance:float64:168:72:9
+single:primitive:position_covariance_type:uint8:240:1

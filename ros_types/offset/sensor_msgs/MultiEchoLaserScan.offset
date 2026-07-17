@@ -1,0 +1,10 @@
+single:struct:header:std_msgs/Header:0:136
+single:primitive:angle_min:float32:136:4
+single:primitive:angle_max:float32:140:4
+single:primitive:angle_increment:float32:144:4
+single:primitive:time_increment:float32:148:4
+single:primitive:scan_time:float32:152:4
+single:primitive:range_min:float32:156:4
+single:primitive:range_max:float32:160:4
+varray:struct:ranges:LaserEcho:164:8:8
+varray:struct:intensities:LaserEcho:172:8:8

@@ -1,0 +1,3 @@
+single:struct:header:std_msgs/Header:0:136
+varray:struct:points:geometry_msgs/Point32:136:12:8
+varray:struct:channels:ChannelFloat32:144:136:8

@@ -1,0 +1,6 @@
+single:primitive:sequence_id:uint32:0:4
+single:primitive:chunk_index:uint32:4:4
+single:primitive:chunk_count:uint32:8:4
+single:primitive:start_index:uint32:12:4
+single:primitive:valid_count:uint32:16:4
+varray:struct:drones:hako_msgs/DroneVisualState:20:32:8

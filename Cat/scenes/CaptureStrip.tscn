@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5capturestrip"]
+
+[ext_resource type="Script" path="res://Cat/scripts/capture_strip.gd" id="1"]
+
+[node name="CaptureStrip" type="Node3D"]
+script = ExtResource("1")

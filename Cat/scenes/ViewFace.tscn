@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b5viewface10"]
+
+[ext_resource type="Script" uid="uid://b0j2leo0ggiyc" path="res://Cat/scripts/view_face.gd" id="1"]
+
+[node name="ViewFace" type="Node3D" unique_id=1273875516]
+script = ExtResource("1")

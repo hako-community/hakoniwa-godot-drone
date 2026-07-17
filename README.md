@@ -43,6 +43,7 @@ Plugins/
 このプロジェクトのディレクトリ構成は以下のとおりです：
 
 ```tree
+├── Cat            # AI猫モジュール（後述: scenes / scripts / モデル）
 ├── Materials
 ├── Models
 ├── Plugins
@@ -99,6 +100,46 @@ Plugins/
 これらのモデルはOnShape上のパブリックドキュメントから取得しています。本プロジェクトでは研究・非商用目的で使用していますが、OnShapeのパブリックドキュメントにはライセンス表記がないため、著作権や利用規約については各モデルの作成者に依存する可能性があります。
 
 そのため、商用利用や再配布を行う場合は、各モデルの作成者にライセンスを確認する必要があります。
+
+# AI猫によるドローン追跡（Cat モジュール）
+
+`drone_cat_1.tscn` は、基本シーン `drone_1.tscn` を複製し **AI制御の猫** を追加したシーンです。猫が箱庭ドローンを追跡し、間合いに入ると跳躍/前足パンチで一撃を狙います。
+
+## 構成
+
+| 要素 | 場所 | 役割 |
+|---|---|---|
+| シーン | `Scenes/drone_cat_1.tscn` | ドローン箱庭＋AI猫（`drone_1.tscn` は無改変で温存） |
+| 猫本体 | `Cat/scenes/CatController.tscn`（`Cat/scripts/cat_controller.gd`） | 移動・アニメ・ジャンプ物理。入力/AIを知らない「意図API」だけを公開 |
+| AIブレイン | `Cat/scripts/cat_drone_hunter.gd`（`CatHunter` ノード） | ドローンを追跡→跳躍/パンチ。意図APIを駆動 |
+| モデル | `Cat/p3_koha9face.glb` ＋ テクスチャ | 猫の3Dモデル（毛シェル・アルファ） |
+| デモ飛行 | `Cat/scripts/drone_demo_pilot.gd`（`DroneDemoPilot`） | コンダクタ無しでドローンを自動飛行させる（実サーバ時は `enabled=false`） |
+| 単体テスト | `Cat/scenes/HuntTest.tscn` | 実ドローン/コンダクタ不要でAI挙動を確認 |
+
+## 動作
+
+- **STARTボタン連携**：シミュレータ開始（`HakoSimState.Running`）前は **お座り** で待機。STARTで **ゆっくり歩き出し**、その後は **近くは歩き / 遠くは走り** で追跡します。
+- **攻撃**：ドローン高度が低ければ地上パンチ、跳んで届く高さなら跳躍。接触すると `drone_hit` シグナルを発火します（ドローンを落とす「撃墜」連携は今後対応）。
+
+## レンダラ
+
+猫の毛/アルファ表現のため、プロジェクトのレンダラを **Forward+** に設定しています（`project.godot`）。※ Quest スタンドアロン等モバイル向けに動かす場合は Mobile レンダラが別途必要です。
+
+## 実行方法
+
+- **実シーン**：箱庭コンダクタを起動した上で `drone_cat_1.tscn` を Play。STARTボタンで猫が動き出します。
+- **AI単体確認（コンダクタ不要）**：`Cat/scenes/HuntTest.tscn` を「現在のシーンを実行(F6)」。ダミードローンを猫が追います。
+
+## 調整
+
+Inspector で調整できます。詳細は **[`Cat/cat_ai_tuning.md`](Cat/cat_ai_tuning.md)** を参照：
+
+- `CatHunter`：`run_distance`（走り出す距離）/ `jump_reach`（跳ぶ高度）/ `start_walk_time`（START直後の歩き出し秒）/ `wait_for_sim_start` など
+- `Cat`：`walk_speed` / `run_speed` / `walk_anim_speed`（すり足対策）など
+
+## レーダー可視化の無効化
+
+`DroneAvatar` の `[Export] enableRadarVisualizer` を `false` にすると、自動生成されるレーダー点群/FOVコーンの可視化を消せます（`drone_cat_1` では false 設定済み）。
 
 ## 対応しているCollider
 

@@ -21,7 +21,12 @@ namespace hakoniwa.objects.core.sensors
         [Export] public float HorizontalFOV = 30f;
         [Export] public float VerticalFOV = 10f;
         [Export] public float VelColorScale = 3.0f; // m/s mapped to full red/blue
-        [Export] public bool ShowFovCone = true;
+        // OFF by default (2026-07-22): this cone is a SOLID translucent cylinder of
+        // BottomRadius=max(rx,ry) and Height=Range with CullMode=Disabled, so at the
+        // auto-created 90x50deg/30m settings it is a 30m x 30m blob that swallows the
+        // camera -- the "screen goes blue / white bubble behind the drone" symptom.
+        // A proper wireframe range display lives in SensorVizRig (see design doc 18.2).
+        [Export] public bool ShowFovCone = false;
 
         private string robotName;
         private MultiMesh multiMesh;

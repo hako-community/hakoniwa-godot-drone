@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bpsqgphvd1tls"]
+
+[ext_resource type="Material" uid="uid://be714h4dobqo" path="res://Materials/LED/RedOff.tres" id="1_aksr4"]
+[ext_resource type="Script" uid="uid://rcfj4kf6ddl7" path="res://Scripts/Components/FlightModeLedController.cs" id="2_i08lr"]
+[ext_resource type="Material" uid="uid://31mtxr7r06o3" path="res://Materials/LED/Red.tres" id="3_de3j2"]
+[ext_resource type="Material" uid="uid://mbjha5aveaif" path="res://Materials/LED/Blue.tres" id="4_3otyn"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_gc6ky"]
+material = ExtResource("1_aksr4")
+
+[node name="LED_FlightModeFront2" type="MeshInstance3D" unique_id=2060883182 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.070376106, -0.034502443, 0.004658326, 0.04223762, -0.05656586, 0.023187354, -0.0041511413, 0.009380606, 0.15695535, 0.185, 0.576, -0.181)
+mesh = SubResource("BoxMesh_gc6ky")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("2_i08lr")
+ledRenderer = NodePath(".")
+attiMaterial = ExtResource("3_de3j2")
+gpsMaterial = ExtResource("4_3otyn")
+offMaterial = ExtResource("1_aksr4")
+attiBlinkInterval = 0.2

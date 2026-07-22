@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d2ac774nf7bsc"]
+
+[ext_resource type="PackedScene" uid="uid://dl5wb4llrdfhp" path="res://Models/origin-01/origin-01.glb" id="1_ur21b"]
+
+[node name="Origin01Body" instance=ExtResource("1_ur21b")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)

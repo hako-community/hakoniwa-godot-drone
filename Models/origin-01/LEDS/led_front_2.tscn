@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dl1dvvm7sgfpw"]
+
+[ext_resource type="Material" uid="uid://be714h4dobqo" path="res://Materials/LED/RedOff.tres" id="1_rxeyh"]
+[ext_resource type="Script" uid="uid://dlf4oeacsdmoe" path="res://Scripts/Components/DroneLedController.cs" id="2_bwkor"]
+[ext_resource type="Material" uid="uid://31mtxr7r06o3" path="res://Materials/LED/Red.tres" id="3_j61xc"]
+[ext_resource type="Material" uid="uid://didpmfitwrcb0" path="res://Materials/LED/Green.tres" id="4_ub1xm"]
+[ext_resource type="Material" uid="uid://u064ye5rlcbd" path="res://Materials/LED/Yellow.tres" id="5_1gxpu"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_gc6ky"]
+material = ExtResource("1_rxeyh")
+
+[node name="LED_Front2" type="MeshInstance3D" unique_id=999268228 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.088849925, 0.02107482, 0.004448393, -9.549243e-10, -0.0015178026, 0.12483992, 0.087924354, 0.021296673, 0.0044952226, -0.88186, 0.474, -0.8928553)
+mesh = SubResource("BoxMesh_gc6ky")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("2_bwkor")
+ledRenderer = NodePath(".")
+disarmMaterial = ExtResource("1_rxeyh")
+takeoffMaterial = ExtResource("3_j61xc")
+hoverMaterial = ExtResource("4_ub1xm")
+landingMaterial = ExtResource("5_1gxpu")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2

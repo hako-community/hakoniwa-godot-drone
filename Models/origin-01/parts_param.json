@@ -1,0 +1,27 @@
+{
+    "propellers": [
+        {"name": "propeller1", "pos": [0.831, 0.544, -0.849]},
+        {"name": "propeller2", "pos": [-0.837, 0.544, 0.845]},
+        {"name": "propeller3", "pos": [-0.837, 0.544, -0.849]},
+        {"name": "propeller4", "pos": [0.831, 0.544, 0.845]}
+    ],
+    "LEDs": [
+        {"scene": "led_back"},
+        {"scene": "led_back_2"},
+        {"scene": "led_front"},
+        {"scene": "led_front_2"}
+    ],
+    "FLIGHT_LEDs": [
+        {"scene": "led_flight_mode_back"},
+        {"scene": "led_flight_mode_front"},
+        {"scene": "led_flight_mode_front_2"}
+    ],
+    "CAMERA_POSITIONS": [
+        {"name": "drone_camera", "pos": [0.0, 1.0, 3.5]}
+    ],
+    "COLLISION_BOXES": [
+        {"name": "collision_box1", "size": [1.8, 0.6, 1.8], "position": [0.0, 0.352, 0.0]}
+    ],
+    "DRONE_SCALE" : 0.6
+
+}

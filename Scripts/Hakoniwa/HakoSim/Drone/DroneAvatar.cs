@@ -139,7 +139,12 @@ namespace hakoniwa.drone.sim
             // R3/R4: Godot Pattern-B radar. Use scene-provided radars if present,
             // otherwise create one programmatically (avoids editing the .tscn).
             radars = FindComponents<IRadar3DController>();
-            if (radars == null || radars.Count == 0)
+            // Pattern B (Godot's own ray-cast radar) is deprecated: sensing belongs to
+            // hakoniwa-mujoco-sensor. Auto-creating it made every scene draw hundreds of
+            // white 0.12m spheres plus a 30m translucent cone ("white bubble behind the
+            // drone" / "screen goes blue"). Opt-in only now: HAKO_LEGACY_RADAR=1.
+            bool legacyRadar = OS.GetEnvironment("HAKO_LEGACY_RADAR") == "1";
+            if (legacyRadar && (radars == null || radars.Count == 0))
             {
                 var radarNode = new Default3DRadarController {
                     Name = "RadarAuto",

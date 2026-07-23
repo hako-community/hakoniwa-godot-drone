@@ -1,0 +1,18 @@
+# Godot 4+ editor cache and mono/.NET build output
+.godot/
+
+# Editor / manual backups
+*.bak
+*.old
+*.old.tscn
+
+# Generated PDU channel translation tables (regenerated on build)
+*.translation
+
+# Import metadata for non-asset strays (real asset *.import files stay tracked)
+/avatar-drone.csv.import
+/icon.svg.import
+
+# Case-variant duplicate strays of the tracked Ev3Pdu*.json (Ev3 vs EV3)
+/ros_types/json/ev3_msgs/EV3PduActuator.json
+/ros_types/json/ev3_msgs/EV3PduSensor.json

@@ -19,10 +19,18 @@ namespace hakoniwa.env
     // matching env.tscn generated alongside env.xml from the same source.
     public static class EnvRoomBuilder
     {
+        // The room is a single shared world object. With more than one avatar
+        // (2-drone view) every DroneAvatar calls this, so guard against building
+        // it twice. Reset when a fresh scene loads is unnecessary here -- the
+        // process is short-lived per run.
+        private static bool _built = false;
+
         public static void BuildIfRequested(Node worldParent)
         {
             string path = OS.GetEnvironment("HAKO_ENV_OBB");
             if (string.IsNullOrEmpty(path)) return;
+            if (_built) return;   // one room only, no matter how many avatars ask
+            _built = true;
             if (!Godot.FileAccess.FileExists(path))
             {
                 GD.PrintErr($"[EnvRoom] HAKO_ENV_OBB file not found: {path}");

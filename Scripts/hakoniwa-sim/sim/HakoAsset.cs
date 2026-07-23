@@ -53,10 +53,26 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         return Instance;
     }
 
+    // Hako objects added at runtime (e.g. a cloned avatar for a 2-drone view).
+    // Registered before _Ready via RegisterExtraHakoObject and initialized
+    // alongside the exported hakoObjects.
+    private readonly List<Node> extraHakoObjects = new List<Node>();
+
+    // Add a hako object (a Node carrying an IHakoObject) at runtime. Must be
+    // called before this asset's _Ready (e.g. from a sibling's _EnterTree, which
+    // always runs before any _Ready in the same tree).
+    public void RegisterExtraHakoObject(Node obj)
+    {
+        if (obj != null) extraHakoObjects.Add(obj);
+    }
+
     private bool HakoAssetIsValid(List<IHakoObject> hakoObectList)
     {
-        if (hakoObjects == null) return false;
-        foreach (var obj in hakoObjects)
+        if (hakoObjects == null && extraHakoObjects.Count == 0) return false;
+        var all = new List<Node>();
+        if (hakoObjects != null) all.AddRange(hakoObjects);
+        all.AddRange(extraHakoObjects);
+        foreach (var obj in all)
         {
             IHakoObject ihako = NodeUtil.FindNodeByInterface<IHakoObject>(obj);
             if (ihako == null)
@@ -79,6 +95,16 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         {
             GD.PrintErr("Invalid HakoAssets");
             return;
+        }
+
+        // Optional override of the channel-definition json (e.g. a 2-drone def
+        // that adds Drone1). Lets a launcher point at a different pdudef without
+        // editing the scene. Unset -> keep the scene's customJsonFilePath.
+        string cfgOverride = OS.GetEnvironment("HAKO_PDU_CONFIG");
+        if (!string.IsNullOrEmpty(cfgOverride))
+        {
+            customJsonFilePath = cfgOverride;
+            GD.Print($"[HakoAsset] HAKO_PDU_CONFIG override -> {customJsonFilePath}");
         }
 
         long delta_time = 1000; // 1ms

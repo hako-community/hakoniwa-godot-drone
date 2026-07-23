@@ -45,6 +45,11 @@ namespace hakoniwa.objects.core.sensors
         [Export] public int MaxPoints = 200000;
         [Export] public float DopplerFullScale = 1.2f;   // m/s mapped to full red/blue (indoor speeds are ~0.5 m/s)
         [Export] public bool ShowHud = true;
+        // Only the primary rig owns the shared scene camera, the HUD and the
+        // camera-cycle keys. Secondary rigs (extra drones in a 2-drone view) still
+        // draw their own cone / points / clusters but must not build cameras or a
+        // second HUD. Set false on cloned avatars.
+        [Export] public bool IsPrimary = true;
         // V-4 detection: points are grouped into objects by a voxel grid + union-find.
         [Export] public float ClusterCellM = 0.40f;
         [Export] public int MinPointsRadar = 3;
@@ -257,6 +262,7 @@ namespace hakoniwa.objects.core.sensors
         // ======================================================================
         private void BuildCameras()
         {
+            if (!IsPrimary) return;   // secondary rigs never touch the shared camera
             sceneCam = GetViewport()?.GetCamera3D();
 
             float r = Mathf.Max(radarSpec.RangeM, lidarSpec.RangeM);
@@ -774,6 +780,7 @@ namespace hakoniwa.objects.core.sensors
         // ======================================================================
         private void BuildHud()
         {
+            if (!IsPrimary) return;   // one HUD only (owned by the primary rig)
             var layer = new CanvasLayer { Name = "SensorVizHud" };
             AddChild(layer);
             hud = new Label

@@ -305,9 +305,13 @@ namespace hakoniwa.drone.sim
 
         private List<T> FindComponents<T>() where T : class
         {
+            // Search only THIS avatar's own subtree. Searching from the scene root
+            // used to be fine with a single avatar, but a 2-drone view has one
+            // sensor rig per avatar -- a whole-tree search made every avatar grab
+            // every rig (cross-wiring + double init). Sensors are mounted on the
+            // drone, so the avatar subtree is the correct scope.
             List<T> results = new List<T>();
-            var root = GetTree().Root;
-            NodeUtil._FindComponentsRecursive(root, results);
+            NodeUtil._FindComponentsRecursive(this, results);
             return results;
         }
 

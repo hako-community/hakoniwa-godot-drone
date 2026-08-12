@@ -56,6 +56,11 @@ namespace hakoniwa.objects.core.sensors
         [Export] public int MinPointsLidar = 12;
         [Export] public int MaxDetections = 8;
         [Export] public float WarnDistanceM = 3.0f;   // inside this -> red / WARNING
+        // Floating 3D text next to every detection ("2.61 m +3 deg / 120 pts +1.4 m/s").
+        // Useful when a single drone is scanning a room, but with two drones the tags
+        // overlap each other and the aircraft, so the avoidance scene turns them off
+        // and reads the same numbers from the HUD instead. Boxes/points are unaffected.
+        [Export] public bool ShowDetectionLabels = true;
         // The origin-01 glb ships its own motor/propeller visuals under a "Dynamics"
         // node. They are static (the spinning propellers are separate instances placed
         // by the scene), so leaving them visible draws a second, oversized set of
@@ -72,8 +77,107 @@ namespace hakoniwa.objects.core.sensors
             public float RangeM = 20.0f;
             public float HFovDeg = 60.0f;
             public float VFovDeg = 20.0f;
+            // Explicit angular window (deg, azimuth positive left / elevation positive
+            // up). NaN means the manifest did not give one, so the symmetric FOV above
+            // is used -- mirroring math::WindowOf on the sensor side. A sensor may look
+            // somewhere other than straight ahead (a rear sector, a downward slice), and
+            // what is drawn has to be where it actually looks.
+            public float AzStartDeg = float.NaN;
+            public float AzEndDeg = float.NaN;
+            public float ElStartDeg = float.NaN;
+            public float ElEndDeg = float.NaN;
             public Vector3 MountRos = Vector3.Zero;   // ROS body frame: x fwd, y left, z up
             public float MountYawDeg;
+
+            // Distance-dependent detection model (the RCS stand-in), mirroring
+            // math::DetectionProbability on the sensor side:
+            //     P(R) = 1                      for R <= ref
+            //     P(R) = (ref / R) ^ falloff    for R >  ref
+            // ref <= 0 means the model is off and every in-range hit is reported.
+            // Drawing only the geometric `range` while this is active is a lie: at
+            // ref=6/range=20 the drawn edge detects barely 9% of the time.
+            public float DetectionRefM;               // 0 = model disabled
+            public float DetectionFalloffExp = 2.0f;
+            // The RCS the reference range is quoted against, and the RCS of the
+            // target the isosurface is drawn FOR. Rmax scales as sigma^(1/4), so a
+            // shinier target pushes every isosurface outward. Drawing only the
+            // reference target would repeat #1's mistake one level down: the
+            // picture would be right for a 1 m^2 target and wrong for the aircraft
+            // actually being tracked.
+            public float ReferenceRcsM2 = 1.0f;
+            public float TargetRcsM2 = 1.0f;
+
+            public bool HasDetectionModel => DetectionRefM > 0.0f
+                                          && DetectionFalloffExp > 0.0f
+                                          && DetectionRefM < RangeM;
+
+            /// Reference range after scaling for the target being drawn.
+            public float EffectiveRefM => (ReferenceRcsM2 > 0.0f && TargetRcsM2 > 0.0f)
+                ? DetectionRefM * Mathf.Pow(TargetRcsM2 / ReferenceRcsM2, 0.25f)
+                : DetectionRefM;
+
+            /// Range at which detection probability falls to `p` (0 &lt; p &lt;= 1),
+            /// for the target this spec is drawn for.
+            /// Inverting P above: R = ref_eff * p^(-1/falloff).
+            public float RangeAtProbability(float p)
+                => EffectiveRefM * Mathf.Pow(p, -1.0f / DetectionFalloffExp);
+
+            public float Range50 => RangeAtProbability(0.5f);
+
+            public float Az0 => float.IsNaN(AzStartDeg) ? -0.5f * HFovDeg : AzStartDeg;
+            public float Az1 => float.IsNaN(AzEndDeg) ? 0.5f * HFovDeg : AzEndDeg;
+            public float El0 => float.IsNaN(ElStartDeg) ? -0.5f * VFovDeg : ElStartDeg;
+            public float El1 => float.IsNaN(ElEndDeg) ? 0.5f * VFovDeg : ElEndDeg;
+            public float AzSpanDeg => Az1 - Az0;
+            public float ElSpanDeg => El1 - El0;
+            public bool FullCircle => Mathf.Abs(AzSpanDeg) >= 359.5f;
+            public bool Asymmetric => !float.IsNaN(AzStartDeg) || !float.IsNaN(ElStartDeg);
+
+            public string Label => Asymmetric
+                ? $"az {Az0:F0}..{Az1:F0}, el {El0:F0}..{El1:F0} deg"
+                : $"fov {HFovDeg:F0}x{VFovDeg:F0} deg";
+
+            // Spelled out on the HUD because the geometric range alone is misleading
+            // once the falloff is on: P(range) is what the edge is actually worth.
+            public string DetectionLabel => HasDetectionModel
+                ? $"P1.0 {EffectiveRefM:F1} m, P0.5 {Range50:F1} m, "
+                  + $"P{ProbabilityAtRange(RangeM):F2} @ {RangeM:F1} m"
+                  + (Mathf.Abs(TargetRcsM2 - ReferenceRcsM2) > 1e-6f
+                        ? $"  (rcs {TargetRcsM2:G3}/{ReferenceRcsM2:G3} m2)" : "")
+                : "no falloff (geometric)";
+
+            /// Detection probability at range `r` -- the same curve the sensor uses.
+            public float ProbabilityAtRange(float r)
+            {
+                float refEff = EffectiveRefM;
+                if (!HasDetectionModel || r <= refEff) return 1.0f;
+                return Mathf.Clamp(Mathf.Pow(refEff / r, DetectionFalloffExp), 0.0f, 1.0f);
+            }
+        }
+
+        // Draw the detection envelope for a target of this RCS (m^2) instead of the
+        // manifest's reference target. 0 = use the reference.
+        private static float TargetRcsOverride
+        {
+            get
+            {
+                string s = OS.GetEnvironment("HAKO_VIZ_TARGET_RCS");
+                return (!string.IsNullOrEmpty(s) && float.TryParse(s, out float v) && v > 0.0f)
+                    ? v : 0.0f;
+            }
+        }
+
+        /// Monostatic radar equation, mirroring math::RadarEquationRange on the
+        /// sensor side. Returns 0 for an incomplete budget.
+        private static float RadarEquationRange(float txPowerW, float gainDbi, float wavelengthM,
+                                                float rcsM2, float minSignalW)
+        {
+            if (txPowerW <= 0.0f || wavelengthM <= 0.0f || rcsM2 <= 0.0f || minSignalW <= 0.0f)
+                return 0.0f;
+            double g = Mathf.Pow(10.0f, gainDbi / 10.0f);
+            double fourPiCubed = Mathf.Pow(4.0f * Mathf.Pi, 3.0f);
+            double num = txPowerW * g * g * (double)wavelengthM * wavelengthM * rcsM2;
+            return (float)Mathf.Pow((float)(num / (fourPiCubed * minSignalW)), 0.25f);
         }
 
         private readonly SensorSpec lidarSpec = new SensorSpec { RangeM = 20.0f, HFovDeg = 360.0f, VFovDeg = 30.0f };
@@ -84,11 +188,35 @@ namespace hakoniwa.objects.core.sensors
         private SensorVizMode mode = SensorVizMode.RadarOnly;
         private SensorVizCam camMode = SensorVizCam.Scene;
         private Camera3D sceneCam, topCam, obliqueCam;
-        private Node3D lidarRoot, radarRoot;
-        private MultiMesh lidarPoints, radarPoints;
+        // One aircraft may carry several radars (a forward sector plus a rear one),
+        // each with its own window and its own PDU channel, so the rig keeps a
+        // view per radar instead of a single set of fields.
+        private sealed class RadarView
+        {
+            public SensorSpec Spec;
+            public string PduName;
+            public Node3D Root;
+            public MultiMesh Points;
+            public DetLayer Det;
+            public int Count;
+            public float NearestM = -1f;
+            public float NearestAzDeg;
+        }
+        private readonly List<RadarView> radars = new List<RadarView>();
+        private readonly List<SensorSpec> radarSpecs = new List<SensorSpec>();
+
+        private Node3D lidarRoot;
+        private MultiMesh lidarPoints;
         private Label hud;
         private int lidarCount, radarCount;
         private float radarNearestM = -1f, radarNearestAzDeg;
+        // Detections from every radar, for the HUD.
+        private readonly List<Detection> allDets = new List<Detection>();
+        private readonly List<string> radarPduNames = new List<string>();
+        // Filled by UpdatePoints for the radar it was just called on.
+        private float radarNearestScratch = -1f, radarNearestAzScratch;
+        // Warnings found by the most recent UpdateDetections call.
+        private int frameWarnCount;
         private const int PointStep = 16;   // x,y,z + intensity/velocity (4 x float32)
 
         // --- V-4 detection state ------------------------------------------------
@@ -103,7 +231,7 @@ namespace hakoniwa.objects.core.sensors
             public int Count;
             public float MinRange, AzDeg, VelMps;
         }
-        private DetLayer lidarDet, radarDet;
+        private DetLayer lidarDet;
         private readonly List<Vector3> pts = new List<Vector3>();   // ROS frame, current frame
         private readonly List<float> vals = new List<float>();
         private readonly List<Detection> dets = new List<Detection>();
@@ -138,13 +266,10 @@ namespace hakoniwa.objects.core.sensors
             ParseInitialMode();
 
             lidarRoot = BuildSensorRoot("LidarViz", lidarSpec);
-            radarRoot = BuildSensorRoot("RadarViz", radarSpec);
+            BuildRadarViews();
             lidarPoints = AddPointCloud(lidarRoot, LidarPointSize, false);
-            radarPoints = AddPointCloud(radarRoot, RadarPointSize, true);
             AddLidarRangeRings(lidarRoot, lidarSpec);
-            AddRadarFovWireframe(radarRoot, radarSpec);
             lidarDet = BuildDetLayer(lidarRoot);
-            radarDet = BuildDetLayer(radarRoot);
             BuildCameras();
             HideModelBuiltinDynamics();
             if (ShowHud) BuildHud();
@@ -153,7 +278,8 @@ namespace hakoniwa.objects.core.sensors
             ApplyCamera();
             GD.Print($"[SensorViz] initialized robot={robotName} mode={mode} " +
                      $"lidar(range={lidarSpec.RangeM}m vfov={lidarSpec.VFovDeg}deg found={lidarSpec.Found}) " +
-                     $"radar(range={radarSpec.RangeM}m fov={radarSpec.HFovDeg}x{radarSpec.VFovDeg}deg found={radarSpec.Found})");
+                     $"radar x{radars.Count}(" + string.Join(", ", radars.ConvertAll(
+                         v => $"{v.PduName}: range={v.Spec.RangeM}m {v.Spec.Label} [{v.Spec.DetectionLabel}]")) + ")");
         }
 
         public void DoControl(IPduManager pduManager)
@@ -165,8 +291,26 @@ namespace hakoniwa.objects.core.sensors
             }
             else if (mode == SensorVizMode.RadarOnly)
             {
-                radarCount = UpdatePoints(pduManager, RadarPduName, radarPoints, true);
-                UpdateDetections(radarDet, MinPointsRadar);
+                radarCount = 0;
+                radarNearestM = -1f;
+                allDets.Clear();
+                warnCount = 0;
+                foreach (RadarView v in radars)
+                {
+                    v.Count = UpdatePoints(pduManager, v.PduName, v.Points, true);
+                    v.NearestM = radarNearestScratch;
+                    v.NearestAzDeg = radarNearestAzScratch;
+                    UpdateDetections(v.Det, MinPointsRadar);
+                    radarCount += v.Count;
+                    allDets.AddRange(dets);
+                    warnCount += frameWarnCount;
+                    if (v.NearestM > 0f && (radarNearestM < 0f || v.NearestM < radarNearestM))
+                    {
+                        radarNearestM = v.NearestM;
+                        radarNearestAzDeg = v.NearestAzDeg;
+                    }
+                }
+                allDets.Sort((a, b) => a.MinRange.CompareTo(b.MinRange));
             }
             UpdateCameras();
             UpdateHud();
@@ -252,9 +396,13 @@ namespace hakoniwa.objects.core.sensors
             bool lidarOn = mode == SensorVizMode.LidarOnly;
             bool radarOn = mode == SensorVizMode.RadarOnly;
             if (lidarRoot != null) lidarRoot.Visible = lidarOn;
-            if (radarRoot != null) radarRoot.Visible = radarOn;
+            foreach (RadarView v in radars) if (v.Root != null) v.Root.Visible = radarOn;
             if (!lidarOn) { lidarCount = 0; if (lidarPoints != null) lidarPoints.InstanceCount = 0; }
-            if (!radarOn) { radarCount = 0; radarNearestM = -1f; if (radarPoints != null) radarPoints.InstanceCount = 0; }
+            if (!radarOn)
+            {
+                radarCount = 0; radarNearestM = -1f; allDets.Clear();
+                foreach (RadarView v in radars) if (v.Points != null) v.Points.InstanceCount = 0;
+            }
         }
 
         // ======================================================================
@@ -320,7 +468,14 @@ namespace hakoniwa.objects.core.sensors
         // ======================================================================
         private void LoadManifest()
         {
-            string path = OS.GetEnvironment("HAKO_SENSOR_MANIFEST");
+            // Aircraft may carry different sensor fits (a forward radar on one, a
+            // rear sector on the other), so the secondary rig looks for its own
+            // manifest first and falls back to the shared one.
+            string path = IsPrimary ? "" : OS.GetEnvironment("HAKO_SENSOR_MANIFEST2");
+            if (string.IsNullOrEmpty(path))
+            {
+                path = OS.GetEnvironment("HAKO_SENSOR_MANIFEST");
+            }
             if (string.IsNullOrEmpty(path))
             {
                 GD.Print("[SensorViz] HAKO_SENSOR_MANIFEST unset -> using fallback specs");
@@ -361,11 +516,63 @@ namespace hakoniwa.objects.core.sensors
                 }
                 else if (type == "radar")
                 {
-                    radarSpec.Found = true;
-                    radarSpec.RangeM = GetF(prm, "range", radarSpec.RangeM);
-                    radarSpec.HFovDeg = GetF(prm, "horizontal_fov_deg", radarSpec.HFovDeg);
-                    radarSpec.VFovDeg = GetF(prm, "vertical_fov_deg", radarSpec.VFovDeg);
-                    ReadMount(comp, radarSpec);
+                    // Every radar in the manifest gets its own spec and PDU name.
+                    // The first one also fills radarSpec, which the cameras and the
+                    // IRadar3DController params still read.
+                    var spec = new SensorSpec { Found = true };
+                    spec.RangeM = GetF(prm, "range", radarSpec.RangeM);
+                    spec.HFovDeg = GetF(prm, "horizontal_fov_deg", radarSpec.HFovDeg);
+                    spec.VFovDeg = GetF(prm, "vertical_fov_deg", radarSpec.VFovDeg);
+                    // Optional asymmetric window; absent keys stay NaN and the
+                    // symmetric FOV above is used instead.
+                    spec.AzStartDeg = GetF(prm, "azimuth_start_deg", float.NaN);
+                    spec.AzEndDeg = GetF(prm, "azimuth_end_deg", float.NaN);
+                    spec.ElStartDeg = GetF(prm, "elevation_start_deg", float.NaN);
+                    spec.ElEndDeg = GetF(prm, "elevation_end_deg", float.NaN);
+                    // Distance-dependent detection model. Absent (or 0) leaves it off,
+                    // which is how the non-RCS manifests behave.
+                    spec.DetectionRefM = GetF(prm, "detection_reference_range", 0.0f);
+                    spec.DetectionFalloffExp = GetF(prm, "detection_falloff_exp", 2.0f);
+                    spec.ReferenceRcsM2 = GetF(prm, "reference_rcs_m2", 1.0f);
+                    // The manifest may state sensitivity as a radar-equation link
+                    // budget instead of a distance; derive the same Rmax the runtime
+                    // derives, so the drawing never disagrees with the sensor.
+                    {
+                        float derived = RadarEquationRange(
+                            GetF(prm, "tx_power_w", 0.0f),
+                            GetF(prm, "antenna_gain_dbi", 0.0f),
+                            GetF(prm, "wavelength_m", 0.0f),
+                            spec.ReferenceRcsM2,
+                            GetF(prm, "min_detectable_signal_w", 0.0f));
+                        if (derived > 0.0f) spec.DetectionRefM = derived;
+                    }
+                    // Which target the envelope is drawn for. Defaults to the
+                    // reference, and HAKO_VIZ_TARGET_RCS overrides it so an operator
+                    // can ask "how far would I see THIS aircraft?".
+                    spec.TargetRcsM2 = TargetRcsOverride > 0.0f
+                        ? TargetRcsOverride : spec.ReferenceRcsM2;
+                    ReadMount(comp, spec);
+                    // The PDU name is what ties the drawn window to the channel the
+                    // sensor actually publishes on.
+                    string pdu = comp.ContainsKey("pdu_name") ? comp["pdu_name"].AsString() : "";
+                    if (string.IsNullOrEmpty(pdu) || pdu == "radar_scan") pdu = RadarPduName;
+                    radarSpecs.Add(spec);
+                    radarPduNames.Add(pdu);
+                    if (radarSpecs.Count == 1)
+                    {
+                        radarSpec.Found = true;
+                        radarSpec.RangeM = spec.RangeM;
+                        radarSpec.HFovDeg = spec.HFovDeg;
+                        radarSpec.VFovDeg = spec.VFovDeg;
+                        radarSpec.AzStartDeg = spec.AzStartDeg;
+                        radarSpec.AzEndDeg = spec.AzEndDeg;
+                        radarSpec.ElStartDeg = spec.ElStartDeg;
+                        radarSpec.ElEndDeg = spec.ElEndDeg;
+                        radarSpec.DetectionRefM = spec.DetectionRefM;
+                        radarSpec.DetectionFalloffExp = spec.DetectionFalloffExp;
+                        radarSpec.ReferenceRcsM2 = spec.ReferenceRcsM2;
+                        radarSpec.TargetRcsM2 = spec.TargetRcsM2;
+                    }
                 }
             }
         }
@@ -391,6 +598,22 @@ namespace hakoniwa.objects.core.sensors
             {
                 GD.PrintErr($"[SensorViz] can not declare pdu for read: {robotName}/{LidarPduName}");
             }
+            // DroneAvatar declares the primary radar channel on our behalf (that is
+            // what implementing IRadar3DController buys). Any FURTHER radar the
+            // manifest asks for has to be declared here, or its channel is never
+            // surfaced to the PduManager and reads come back empty.
+            foreach (string pdu in radarPduNames)
+            {
+                if (pdu == RadarPduName) continue;
+                if (!hakoPdu.DeclarePduForRead(robotName, pdu))
+                {
+                    GD.PrintErr($"[SensorViz] can not declare pdu for read: {robotName}/{pdu}");
+                }
+                else
+                {
+                    GD.Print($"[SensorViz] declared extra radar channel for read: {robotName}/{pdu}");
+                }
+            }
         }
 
         // ======================================================================
@@ -398,6 +621,26 @@ namespace hakoniwa.objects.core.sensors
         // ======================================================================
         // ROS sensor frame (x fwd, y left, z up) -> Godot (x right, y up, z back).
         private static Vector3 RosToGodot(Vector3 ros) => new Vector3(-ros.Y, ros.Z, -ros.X);
+
+        // One view per radar in the manifest. With no manifest (or none carrying a
+        // radar) a single fallback view keeps the previous single-radar behaviour.
+        private void BuildRadarViews()
+        {
+            if (radarSpecs.Count == 0)
+            {
+                radarSpecs.Add(radarSpec);
+                radarPduNames.Add(RadarPduName);
+            }
+            for (int i = 0; i < radarSpecs.Count; i++)
+            {
+                var v = new RadarView { Spec = radarSpecs[i], PduName = radarPduNames[i] };
+                v.Root = BuildSensorRoot($"RadarViz{i}", v.Spec);
+                v.Points = AddPointCloud(v.Root, RadarPointSize, true);
+                AddRadarFovWireframe(v.Root, v.Spec);
+                v.Det = BuildDetLayer(v.Root);
+                radars.Add(v);
+            }
+        }
 
         private Node3D BuildSensorRoot(string name, SensorSpec spec)
         {
@@ -473,7 +716,10 @@ namespace hakoniwa.objects.core.sensors
             parent.AddChild(new MeshInstance3D { Mesh = im });
         }
 
-        // V-1: Radar detection volume as a WIREFRAME frustum (never a translucent solid).
+        // V-1: Radar detection volume as a WIREFRAME (never a translucent solid),
+        // drawn over the sensor's ACTUAL angular window -- which since the sampler
+        // change may be a full 360 deg ring or an off-boresight sector, not just a
+        // symmetric forward cone.
         private void AddRadarFovWireframe(Node3D parent, SensorSpec spec)
         {
             var im = new ImmediateMesh();
@@ -486,30 +732,65 @@ namespace hakoniwa.objects.core.sensors
             var axis = new Color(0.25f, 0.85f, 1.0f, 0.45f);
             im.SurfaceBegin(Mesh.PrimitiveType.Lines, mat);
 
-            float ha = Mathf.DegToRad(spec.HFovDeg * 0.5f);
-            float va = Mathf.DegToRad(spec.VFovDeg * 0.5f);
+            float az0 = Mathf.DegToRad(spec.Az0), az1 = Mathf.DegToRad(spec.Az1);
+            float el0 = Mathf.DegToRad(spec.El0), el1 = Mathf.DegToRad(spec.El1);
+            float azMid = 0.5f * (az0 + az1), elMid = 0.5f * (el0 + el1);
             float R = spec.RangeM;
+            // Enough segments that a 360 deg ring still looks round.
+            int seg = Mathf.Clamp((int)(Mathf.Abs(spec.AzSpanDeg) / 3f), 24, 180);
 
-            // --- horizontal fan (el = 0): the detection footprint ---
-            foreach (float az in new[] { -ha, ha })
+            // --- horizontal fan at the window's mid elevation ---
+            if (!spec.FullCircle)
             {
-                im.SurfaceSetColor(fan); im.SurfaceAddVertex(Vector3.Zero);
-                im.SurfaceSetColor(fan); im.SurfaceAddVertex(Dir(az, 0f, R));
+                // The straight edges only mean something for a sector; on a full
+                // circle they would be two coincident spokes.
+                foreach (float az in new[] { az0, az1 })
+                {
+                    im.SurfaceSetColor(fan); im.SurfaceAddVertex(Vector3.Zero);
+                    im.SurfaceSetColor(fan); im.SurfaceAddVertex(Dir(az, elMid, R));
+                }
             }
             im.SurfaceSetColor(axis); im.SurfaceAddVertex(Vector3.Zero);
-            im.SurfaceSetColor(axis); im.SurfaceAddVertex(Dir(0f, 0f, R));   // boresight
-            Ring(im, fan, R, 0f, -ha, ha, 48);
-            for (int i = 1; i <= 3; i++) Ring(im, ring, R * i / 4f, 0f, -ha, ha, 32);
+            im.SurfaceSetColor(axis); im.SurfaceAddVertex(Dir(azMid, elMid, R));   // boresight
+            Ring(im, fan, R, elMid, az0, az1, seg);
+            for (int i = 1; i <= 3; i++) Ring(im, ring, R * i / 4f, elMid, az0, az1, Mathf.Max(16, seg / 2));
+
+            // --- detection-probability isosurfaces (only when the RCS model is on) ---
+            // Without these the cyan edge reads as "the radar sees this far", which is
+            // false once the falloff is active: at ref=6/range=20 the edge detects
+            // about 9% of the time. Green = certain, amber = coin flip.
+            if (spec.HasDetectionModel)
+            {
+                float rCertain = spec.EffectiveRefM;      // P = 1.0 out to here
+                float r50 = spec.Range50;                 // P = 0.5
+                var certain = new Color(0.30f, 0.95f, 0.45f, 0.80f);
+                var half = new Color(1.00f, 0.72f, 0.20f, 0.90f);
+
+                Ring(im, certain, rCertain, elMid, az0, az1, seg);
+                Ring(im, half, r50, elMid, az0, az1, seg);
+                // Faint 3D shells so the isosurfaces read from an oblique camera too,
+                // not just from directly above.
+                foreach (float el in new[] { el0, el1 })
+                {
+                    Ring(im, certain * new Color(1, 1, 1, 0.35f), rCertain, el, az0, az1, Mathf.Max(12, seg / 3));
+                    Ring(im, half * new Color(1, 1, 1, 0.35f), r50, el, az0, az1, Mathf.Max(12, seg / 3));
+                }
+                foreach (float az in new[] { az0, az1 })
+                {
+                    VArc(im, certain * new Color(1, 1, 1, 0.35f), rCertain, az, el0, el1, 10);
+                    VArc(im, half * new Color(1, 1, 1, 0.35f), r50, az, el0, el1, 10);
+                }
+            }
 
             // --- 3D envelope (faint): corner edges + far-face outline ---
-            foreach (float az in new[] { -ha, ha })
-                foreach (float el in new[] { -va, va })
+            foreach (float az in new[] { az0, az1 })
+                foreach (float el in new[] { el0, el1 })
                 {
                     im.SurfaceSetColor(envelope); im.SurfaceAddVertex(Vector3.Zero);
                     im.SurfaceSetColor(envelope); im.SurfaceAddVertex(Dir(az, el, R));
                 }
-            foreach (float el in new[] { -va, va }) Ring(im, envelope, R, el, -ha, ha, 24);
-            foreach (float az in new[] { -ha, ha }) VArc(im, envelope, R, az, -va, va, 12);
+            foreach (float el in new[] { el0, el1 }) Ring(im, envelope, R, el, az0, az1, Mathf.Max(12, seg / 3));
+            foreach (float az in new[] { az0, az1 }) VArc(im, envelope, R, az, el0, el1, 12);
 
             im.SurfaceEnd();
             parent.AddChild(new MeshInstance3D { Mesh = im });
@@ -543,6 +824,13 @@ namespace hakoniwa.objects.core.sensors
         private int UpdatePoints(IPduManager pduManager, string pduName, MultiMesh mm, bool isRadar)
         {
             if (mm == null) return 0;
+            // Clear FIRST. With several radars these buffers are reused per sensor,
+            // so an early return would otherwise leave the previous radar's points
+            // in place and the next detection pass would re-report them.
+            pts.Clear();
+            vals.Clear();
+            radarNearestScratch = -1f;
+            radarNearestAzScratch = 0f;
             // ReadPdu (not CreateNamedPdu): only the SHM-populated buffer carries the
             // mujoco-sensor's write.
             IPdu pdu = pduManager.ReadPdu(robotName, pduName);
@@ -562,8 +850,6 @@ namespace hakoniwa.objects.core.sensors
             int drawn = 0;
             float nearest = float.MaxValue;
             float nearestAz = 0f;
-            pts.Clear();
-            vals.Clear();
 
             for (int i = 0; i < count; i++)
             {
@@ -589,8 +875,8 @@ namespace hakoniwa.objects.core.sensors
 
             if (isRadar)
             {
-                radarNearestM = (drawn > 0 && nearest < float.MaxValue) ? nearest : -1f;
-                radarNearestAzDeg = nearestAz;
+                radarNearestScratch = (drawn > 0 && nearest < float.MaxValue) ? nearest : -1f;
+                radarNearestAzScratch = nearestAz;
             }
             return drawn;
         }
@@ -615,6 +901,9 @@ namespace hakoniwa.objects.core.sensors
         {
             var layer = new DetLayer { Mesh = new ImmediateMesh() };
             parent.AddChild(new MeshInstance3D { Mesh = layer.Mesh });
+            // No labels requested -> build none. DrawDetections iterates the (empty)
+            // list, so nothing else needs to know.
+            if (!ShowDetectionLabels) return layer;
             for (int i = 0; i < MaxDetections; i++)
             {
                 var lb = new Label3D
@@ -652,6 +941,7 @@ namespace hakoniwa.objects.core.sensors
         {
             dets.Clear();
             warnCount = 0;
+            frameWarnCount = 0;
             if (layer == null) return;
             layer.Mesh.ClearSurfaces();
 
@@ -744,10 +1034,11 @@ namespace hakoniwa.objects.core.sensors
             {
                 Detection d = dets[i];
                 bool warn = d.MinRange <= WarnDistanceM;
-                if (warn) warnCount++;
+                if (warn) { warnCount++; frameWarnCount++; }
                 Color c = warn ? new Color(1f, 0.25f, 0.2f, 1f) : new Color(0.35f, 1f, 0.95f, 0.9f);
                 Box(layer.Mesh, c, d.Min, d.Max);
 
+                if (i >= layer.Labels.Count) continue;   // labels disabled
                 Label3D lb = layer.Labels[i];
                 lb.Visible = true;
                 lb.Position = RosToGodot(new Vector3(d.Centroid.X, d.Centroid.Y, d.Max.Z)) + new Vector3(0, 0.18f, 0);
@@ -783,10 +1074,16 @@ namespace hakoniwa.objects.core.sensors
             if (!IsPrimary) return;   // one HUD only (owned by the primary rig)
             var layer = new CanvasLayer { Name = "SensorVizHud" };
             AddChild(layer);
+            // The HUD normally sits just under Godot's own toolbar. Recorded demos
+            // burn a caption across the top of the frame, so HAKO_VIZ_HUD_Y moves it
+            // clear of that instead of having the two overlap.
+            float hudY = 54f;
+            string hy = OS.GetEnvironment("HAKO_VIZ_HUD_Y");
+            if (!string.IsNullOrEmpty(hy) && float.TryParse(hy, out float hyv)) hudY = hyv;
             hud = new Label
             {
                 Name = "Text",
-                Position = new Vector2(14, 54),
+                Position = new Vector2(14, hudY),
                 Modulate = new Color(1, 1, 1)
             };
             hud.AddThemeColorOverride("font_color", new Color(1f, 1f, 1f));
@@ -806,17 +1103,21 @@ namespace hakoniwa.objects.core.sensors
                 SensorVizMode.LidarOnly =>
                     $"LiDAR : {lidarCount,6} pts   range {lidarSpec.RangeM:F1} m, vfov {lidarSpec.VFovDeg:F0} deg",
                 SensorVizMode.RadarOnly =>
-                    $"Radar : {radarCount,6} pts   range {radarSpec.RangeM:F1} m, fov {radarSpec.HFovDeg:F0}x{radarSpec.VFovDeg:F0} deg\n" +
+                    $"Radar x{radars.Count} : {radarCount,6} pts   range {radarSpec.RangeM:F1} m\n" +
+                    string.Join("", radars.ConvertAll(v =>
+                        $"        [{v.PduName}] {v.Spec.Label}  {v.Count} pts\n" +
+                        $"          detect: {v.Spec.DetectionLabel}\n")) +
                     $"        {near}",
                 _ => "(sensor view off)"
             };
             if (mode != SensorVizMode.None)
             {
-                body += $"\nDETECTED: {dets.Count} object(s)";
+                var shown = mode == SensorVizMode.RadarOnly ? allDets : dets;
+                body += $"\nDETECTED: {shown.Count} object(s)";
                 if (warnCount > 0) body += $"   ***  WARNING: {warnCount} within {WarnDistanceM:F1} m  ***";
-                for (int i = 0; i < dets.Count && i < 3; i++)
+                for (int i = 0; i < shown.Count && i < 3; i++)
                 {
-                    var d = dets[i];
+                    var d = shown[i];
                     body += $"\n  #{i + 1}  {d.MinRange,5:F2} m  {d.AzDeg,4:+0;-0;0} deg  {d.Count,5} pts  {d.VelMps,5:+0.0;-0.0;0.0} m/s";
                 }
             }

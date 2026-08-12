@@ -23,10 +23,14 @@ namespace hakoniwa.objects.core.sensors
     {
         [Export] public NodePath PrimaryAvatarPath;      // e.g. ../DRAvatar2
         [Export] public string SecondRobotName = "Drone1";
+        // A scene that exists to show two drones (two_drone_avoid.tscn) says so in
+        // the scene file instead of depending on the launcher exporting
+        // HAKO_TWO_DRONE=1. The env var remains as an opt-in for any other scene.
+        [Export] public bool AlwaysEnabled = false;
 
         public override void _Ready()
         {
-            if (OS.GetEnvironment("HAKO_TWO_DRONE") != "1")
+            if (!AlwaysEnabled && OS.GetEnvironment("HAKO_TWO_DRONE") != "1")
             {
                 return;   // single-drone default: no-op
             }

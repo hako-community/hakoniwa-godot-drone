@@ -1,8 +1,9 @@
-[gd_scene format=3 uid="uid://bs3nsrviz0001"]
+[gd_scene format=3 uid="uid://bs3ns2drnavd1"]
 
 [ext_resource type="Script" uid="uid://bi7xlqcvlqkpu" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_gbdt5"]
 [ext_resource type="Script" uid="uid://c2np2chmdjnds" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_b7pws"]
 [ext_resource type="Script" path="res://Scripts/Components/Sensors/SensorVizRig.cs" id="sensorviz_1"]
+[ext_resource type="Script" path="res://Scripts/Components/Sensors/TwoDroneVizBootstrap.cs" id="twodrone_1"]
 [ext_resource type="Script" uid="uid://cp4v3xue2w0tx" path="res://Scripts/Drone/DroneCollision.cs" id="3_dxre5"]
 [ext_resource type="Script" uid="uid://e5jjjk5wiedi" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="4_3dyd2"]
 [ext_resource type="Script" uid="uid://bnytvp15laood" path="res://Scripts/Unity/Sensors/LiDAR/Default3DLiDARController.cs" id="5_e8cb3"]
@@ -112,7 +113,7 @@ sky_material = SubResource("ProceduralSkyMaterial_fcpor")
 background_mode = 2
 sky = SubResource("Sky_ywsav")
 
-[node name="sensor_viz" type="Node3D" unique_id=1437935397]
+[node name="two_drone_avoid" type="Node3D" unique_id=1437935397]
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=2109683039]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4391567, 0.8322507)
@@ -121,6 +122,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4391567, 0.8322507)
 transform = Transform3D(1, 0, 0, 0, 0.82253134, 0.5687198, 0, -0.5687198, 0.82253134, 0, 0, 0)
 light_color = Color(1, 1, 0.9372549, 1)
 shadow_enabled = true
+
+[node name="TwoDroneBootstrap" type="Node" parent="."]
+script = ExtResource("twodrone_1")
+PrimaryAvatarPath = NodePath("../DRAvatar2")
+SecondRobotName = "Drone1"
+AlwaysEnabled = true
 
 [node name="Hakoniwa" type="Node3D" parent="." unique_id=111513354 node_paths=PackedStringArray("hakoObjects")]
 script = ExtResource("1_gbdt5")
@@ -664,6 +671,7 @@ environment = SubResource("Environment_am0b1")
 
 [node name="SensorViz" type="Node3D" parent="DRAvatar2"]
 script = ExtResource("sensorviz_1")
+ShowDetectionLabels = false
 
 [node name="ModelStyle" type="Node3D" parent="DRAvatar2"]
 script = ExtResource("model_style")

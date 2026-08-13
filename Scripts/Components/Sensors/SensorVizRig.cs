@@ -237,6 +237,17 @@ namespace hakoniwa.objects.core.sensors
         private readonly List<Detection> dets = new List<Detection>();
         private int warnCount;
 
+        // Every rig alive in the scene, one per aircraft. The HUD is a single
+        // CanvasLayer owned by the primary rig, but the numbers it shows must
+        // cover EVERY aircraft: with two drones the secondary rig was drawing its
+        // cone, points and boxes in 3D while its ranges, Doppler and detection
+        // counts existed nowhere but the 3D view, where they have to be read off
+        // by eye. A rig registers itself once it is initialised, so the primary
+        // can ask the others for their numbers without either side owning the
+        // other. Static because the rigs are siblings, not parent and child --
+        // the secondary is a runtime Duplicate() of the primary's avatar.
+        private static readonly List<SensorVizRig> LiveRigs = new List<SensorVizRig>();
+
         // ======================================================================
         // IRadar3DController (driven by DroneAvatar)
         // ======================================================================
@@ -260,6 +271,7 @@ namespace hakoniwa.objects.core.sensors
         public void DoInitialize(string robot_name, IPduManager pduManager)
         {
             robotName = robot_name;
+            if (!LiveRigs.Contains(this)) LiveRigs.Add(this);
 
             LoadManifest();
             DeclareLidarForRead();
@@ -288,6 +300,7 @@ namespace hakoniwa.objects.core.sensors
             {
                 lidarCount = UpdatePoints(pduManager, LidarPduName, lidarPoints, false);
                 UpdateDetections(lidarDet, MinPointsLidar);
+                warnCount = frameWarnCount;   // one sensor, so the frame total IS the total
             }
             else if (mode == SensorVizMode.RadarOnly)
             {
@@ -314,6 +327,14 @@ namespace hakoniwa.objects.core.sensors
             }
             UpdateCameras();
             UpdateHud();
+        }
+
+        // The registry is static, so a rig that leaves the tree (scene reload,
+        // an avatar removed) must take itself out or the HUD keeps reporting a
+        // drone that is no longer flying.
+        public override void _ExitTree()
+        {
+            LiveRigs.Remove(this);
         }
 
         private void HideModelBuiltinDynamics()
@@ -937,10 +958,16 @@ namespace hakoniwa.objects.core.sensors
         private static long CellKey(int x, int y, int z) =>
             ((long)(x & 0xFFFFF) << 40) | ((long)(y & 0xFFFFF) << 20) | (long)(z & 0xFFFFF);
 
+        // Counts warnings into `frameWarnCount` only -- never into the running
+        // `warnCount`. It is called once per radar, so owning both would mean the
+        // caller's accumulation double-counts what this call already added, and
+        // the reset at the top would throw away every earlier radar's total. With
+        // a rear radar that usually sees nothing and runs last, that showed as
+        // "WARNING 0" while the forward radar had a target inside the threshold.
+        // The one counter that spans radars belongs to the caller.
         private void UpdateDetections(DetLayer layer, int minPoints)
         {
             dets.Clear();
-            warnCount = 0;
             frameWarnCount = 0;
             if (layer == null) return;
             layer.Mesh.ClearSurfaces();
@@ -1034,7 +1061,7 @@ namespace hakoniwa.objects.core.sensors
             {
                 Detection d = dets[i];
                 bool warn = d.MinRange <= WarnDistanceM;
-                if (warn) { warnCount++; frameWarnCount++; }
+                if (warn) frameWarnCount++;
                 Color c = warn ? new Color(1f, 0.25f, 0.2f, 1f) : new Color(0.35f, 1f, 0.95f, 0.9f);
                 Box(layer.Mesh, c, d.Min, d.Max);
 
@@ -1092,37 +1119,134 @@ namespace hakoniwa.objects.core.sensors
             layer.AddChild(hud);
         }
 
-        private void UpdateHud()
+        /// Rigs in a stable display order: this one first, then the rest by robot
+        /// name. Stable matters more than clever -- a block that changes position
+        /// between frames cannot be read while the aircraft are moving.
+        private List<SensorVizRig> HudOrder()
         {
-            if (hud == null) return;
+            var list = new List<SensorVizRig>();
+            foreach (SensorVizRig r in LiveRigs)
+            {
+                if (r != null && IsInstanceValid(r)) list.Add(r);
+            }
+            list.Sort((a, b) =>
+            {
+                if (ReferenceEquals(a, this)) return ReferenceEquals(b, this) ? 0 : -1;
+                if (ReferenceEquals(b, this)) return 1;
+                return string.CompareOrdinal(a.robotName ?? "", b.robotName ?? "");
+            });
+            return list;
+        }
+
+        /// One aircraft's sensor numbers, in the compact form a multi-aircraft HUD
+        /// needs. The full form runs to nine lines per aircraft, which for two
+        /// aircraft reaches the flight instruments in the bottom-left corner of a
+        /// 648-line frame; the detection-model line in particular repeats
+        /// "no falloff (geometric)" once per radar and is only worth a line when a
+        /// falloff is actually configured. Everything dropped here is still shown
+        /// in full when a single aircraft is flying.
+        private string HudBodyCompact(int maxDets, string mark)
+        {
+            string name = robotName ?? "?";
+            if (mode == SensorVizMode.None) return $"{mark}{name}   (sensor view off)";
+
+            var shown = mode == SensorVizMode.RadarOnly ? allDets : dets;
+            string head;
+            if (mode == SensorVizMode.LidarOnly)
+            {
+                head = $"{mark}{name}   LiDAR {lidarCount} pts   range {lidarSpec.RangeM:F1} m, "
+                     + $"vfov {lidarSpec.VFovDeg:F0} deg";
+            }
+            else
+            {
+                string near = radarNearestM > 0f
+                    ? $"nearest {radarNearestM:F2} m @ {radarNearestAzDeg:+0;-0;0} deg"
+                    : "nearest --";
+                head = $"{mark}{name}   Radar x{radars.Count} {radarCount} pts   {near}";
+            }
+            head += $"   DETECTED {shown.Count}";
+            if (warnCount > 0) head += $"  ***  WARNING {warnCount} within {WarnDistanceM:F1} m  ***";
+
+            var sb = new System.Text.StringBuilder(head);
+            if (mode == SensorVizMode.RadarOnly && radars.Count > 0)
+            {
+                sb.Append("\n      ");
+                for (int i = 0; i < radars.Count; i++)
+                {
+                    RadarView v = radars[i];
+                    if (i > 0) sb.Append(" | ");
+                    sb.Append($"[{v.PduName}] {v.Spec.Label} {v.Count}");
+                    if (v.Spec.HasDetectionModel) sb.Append($" ({v.Spec.DetectionLabel})");
+                }
+            }
+            for (int i = 0; i < shown.Count && i < maxDets; i++)
+            {
+                var d = shown[i];
+                sb.Append($"\n      #{i + 1}  {d.MinRange,5:F2} m  {d.AzDeg,4:+0;-0;0} deg  "
+                          + $"{d.Count,5} pts  {d.VelMps,5:+0.0;-0.0;0.0} m/s");
+            }
+            return sb.ToString();
+        }
+
+        /// One aircraft's sensor numbers in full. Used when a single aircraft is
+        /// flying, where there is room for every line.
+        private string HudBody(int maxDets, string indent)
+        {
             string near = radarNearestM > 0f
                 ? $"nearest {radarNearestM:F2} m @ {radarNearestAzDeg:+0;-0;0} deg"
                 : "nearest --";
             string body = mode switch
             {
                 SensorVizMode.LidarOnly =>
-                    $"LiDAR : {lidarCount,6} pts   range {lidarSpec.RangeM:F1} m, vfov {lidarSpec.VFovDeg:F0} deg",
+                    $"{indent}LiDAR : {lidarCount,6} pts   range {lidarSpec.RangeM:F1} m, vfov {lidarSpec.VFovDeg:F0} deg",
                 SensorVizMode.RadarOnly =>
-                    $"Radar x{radars.Count} : {radarCount,6} pts   range {radarSpec.RangeM:F1} m\n" +
+                    $"{indent}Radar x{radars.Count} : {radarCount,6} pts   range {radarSpec.RangeM:F1} m\n" +
                     string.Join("", radars.ConvertAll(v =>
-                        $"        [{v.PduName}] {v.Spec.Label}  {v.Count} pts\n" +
-                        $"          detect: {v.Spec.DetectionLabel}\n")) +
-                    $"        {near}",
-                _ => "(sensor view off)"
+                        $"{indent}        [{v.PduName}] {v.Spec.Label}  {v.Count} pts\n" +
+                        $"{indent}          detect: {v.Spec.DetectionLabel}\n")) +
+                    $"{indent}        {near}",
+                _ => $"{indent}(sensor view off)"
             };
             if (mode != SensorVizMode.None)
             {
                 var shown = mode == SensorVizMode.RadarOnly ? allDets : dets;
-                body += $"\nDETECTED: {shown.Count} object(s)";
+                body += $"\n{indent}DETECTED: {shown.Count} object(s)";
                 if (warnCount > 0) body += $"   ***  WARNING: {warnCount} within {WarnDistanceM:F1} m  ***";
-                for (int i = 0; i < shown.Count && i < 3; i++)
+                for (int i = 0; i < shown.Count && i < maxDets; i++)
                 {
                     var d = shown[i];
-                    body += $"\n  #{i + 1}  {d.MinRange,5:F2} m  {d.AzDeg,4:+0;-0;0} deg  {d.Count,5} pts  {d.VelMps,5:+0.0;-0.0;0.0} m/s";
+                    body += $"\n{indent}  #{i + 1}  {d.MinRange,5:F2} m  {d.AzDeg,4:+0;-0;0} deg  {d.Count,5} pts  {d.VelMps,5:+0.0;-0.0;0.0} m/s";
                 }
             }
-            hud.Text =
-                $"SENSOR: {mode}   [L]iDAR / [R]adar / [N]one     CAM: {camMode} x{camZoom:F2}   [C]ycle  [+/-]zoom\n" + body;
+            return body;
+        }
+
+        private void UpdateHud()
+        {
+            if (hud == null) return;
+            string head =
+                $"SENSOR: {mode}   [L]iDAR / [R]adar / [N]one     CAM: {camMode} x{camZoom:F2}   [C]ycle  [+/-]zoom\n";
+
+            List<SensorVizRig> rigs = HudOrder();
+            if (rigs.Count <= 1)
+            {
+                // Single aircraft: exactly the HUD this rig has always drawn, down
+                // to the spacing. The recorded demo clips are framed around it.
+                hud.Text = head + HudBody(3, "");
+                return;
+            }
+
+            // Two or more aircraft. Each gets a named block; the one the camera is
+            // following is marked, because "which of these am I looking through"
+            // is otherwise guesswork.
+            var sb = new System.Text.StringBuilder(
+                head.TrimEnd('\n') + "     ▸ = camera\n");
+            foreach (SensorVizRig r in rigs)
+            {
+                sb.Append(r.HudBodyCompact(2, ReferenceEquals(r, this) ? "▸ " : "  "))
+                  .Append('\n');
+            }
+            hud.Text = sb.ToString().TrimEnd('\n');
         }
     }
 }

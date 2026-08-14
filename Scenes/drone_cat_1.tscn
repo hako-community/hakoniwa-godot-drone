@@ -6,8 +6,9 @@
 [ext_resource type="Script" uid="uid://e5jjjk5wiedi" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="4_3dyd2"]
 [ext_resource type="Script" uid="uid://bnytvp15laood" path="res://Scripts/Components/Sensors/LiDAR/Default3DLiDARController.cs" id="5_e8cb3"]
 [ext_resource type="Script" uid="uid://cd6nsdw3fnbq0" path="res://Scripts/Drone/DronePropeller.cs" id="6_gfuh5"]
-[ext_resource type="PackedScene" uid="uid://bjgko0tors2j8" path="res://Models/propeller.glb" id="7_aqafc"]
-[ext_resource type="PackedScene" uid="uid://cw5a8437yo2jt" path="res://Models/dji_avatar2.glb" id="8_0j742"]
+[ext_resource type="PackedScene" path="res://Models/origin-01/propeller_origin_01.glb" id="7_aqafc"]
+[ext_resource type="PackedScene" path="res://Models/origin-01/origin-01.glb" id="8_0j742"]
+[ext_resource type="Script" path="res://Scripts/Components/Drone/OriginModelStyle.cs" id="model_style"]
 [ext_resource type="Script" uid="uid://bqbnmnfp7aoyr" path="res://Scripts/Hakoniwa/HakoSim/Drone/BaggageGrabber.cs" id="9_i4ev6"]
 [ext_resource type="Script" uid="uid://c67yo40ut53mq" path="res://Scripts/Components/Baggage/Magnet.cs" id="10_oxpj0"]
 [ext_resource type="Script" uid="uid://s3qsyo8qv8qa" path="res://Scripts/Drone/DroneConfig.cs" id="11_bb4ut"]
@@ -132,7 +133,7 @@ hakoObjects = [NodePath("../DRAvatar2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051187024, 0)
 script = ExtResource("2_b7pws")
 enableRadarVisualizer = false
-body = NodePath("dji_avatar2")
+body = NodePath("origin_01")
 rd = NodePath("RigidBody3D")
 droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")
 
@@ -173,19 +174,19 @@ enableAudio = false
 maxRotationSpeed = 40000.0
 
 [node name="propeller1" parent="DRAvatar2/Propellers" unique_id=2124053533 instance=ExtResource("7_aqafc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05889766, -0.010962147, -0.068796396)
+transform = Transform3D(0.075, 0, 0, 0, 0.075, 0, 0, 0, 0.075, 0.12465, 0.0816, -0.12735)
 
 [node name="propeller2" parent="DRAvatar2/Propellers" unique_id=1305391490 instance=ExtResource("7_aqafc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.059, -0.011, 0.022)
+transform = Transform3D(0.075, 0, 0, 0, 0.075, 0, 0, 0, 0.075, -0.12555, 0.0816, 0.12675)
 
 [node name="propeller3" parent="DRAvatar2/Propellers" unique_id=686500983 instance=ExtResource("7_aqafc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.058, -0.011, -0.068)
+transform = Transform3D(0.075, 0, 0, 0, 0.075, 0, 0, 0, 0.075, -0.12555, 0.0816, -0.12735)
 
 [node name="propeller4" parent="DRAvatar2/Propellers" unique_id=1929523109 instance=ExtResource("7_aqafc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.059, -0.011, 0.022)
+transform = Transform3D(0.075, 0, 0, 0, 0.075, 0, 0, 0, 0.075, 0.12465, 0.0816, 0.12675)
 
-[node name="dji_avatar2" parent="DRAvatar2" unique_id=1292418912 instance=ExtResource("8_0j742")]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+[node name="origin_01" parent="DRAvatar2" unique_id=1292418912 instance=ExtResource("8_0j742")]
+transform = Transform3D(-0.15, 0, -1.3113417e-08, 0, 0.15, 0, 1.3113417e-08, 0, -0.15, 0, 0, 0)
 
 [node name="BaggageGrabber" type="Node3D" parent="DRAvatar2" unique_id=242141299]
 script = ExtResource("9_i4ev6")
@@ -726,5 +727,8 @@ allow_run = true
 script = ExtResource("42_demo")
 drone_path = NodePath("../DRAvatar2")
 enabled = false
+
+[node name="ModelStyle" type="Node3D" parent="DRAvatar2"]
+script = ExtResource("model_style")
 
 [connection signal="pressed" from="GUI/CanvasLayer/Control/Button_Start" to="GUI" method="OnButtonClick"]

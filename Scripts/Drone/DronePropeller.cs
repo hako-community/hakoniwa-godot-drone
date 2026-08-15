@@ -24,6 +24,7 @@ namespace hakoniwa.drone
 		public float maxRotationSpeed = 1f;
 		
 		private AudioStreamPlayer3D audioSource;
+		private Node droneSoundNode;
 		[Export]
 		public string audio_path;
 		[Export]
@@ -45,6 +46,15 @@ namespace hakoniwa.drone
 			if (enableAudio)
 			{
 				LoadAudio();
+			}
+
+			if (GetParent() != null)
+			{
+				droneSoundNode = GetParent().FindChild("DroneSound", true, false);
+			}
+			if (droneSoundNode == null)
+			{
+				droneSoundNode = FindChild("DroneSound", true, false);
 			}
 		}
 
@@ -72,14 +82,44 @@ namespace hakoniwa.drone
 			}
 		}
 
+		private float current_c1 = 0;
+		private float current_c2 = 0;
+		private float current_c3 = 0;
+		private float current_c4 = 0;
+
+		public override void _Process(double delta)
+		{
+			float dt = (float)delta;
+			RotatePropeller(propeller1, current_c1, dt);
+			RotatePropeller(propeller2, -current_c2, dt);
+			if (propeller3 != null)
+			{
+				RotatePropeller(propeller3, current_c3, dt);
+			}
+			if (propeller4 != null)
+			{
+				RotatePropeller(propeller4, -current_c4, dt);
+			}
+			if (propeller5 != null)
+			{
+				RotatePropeller(propeller5, current_c1, dt);
+			}
+			if (propeller6 != null)
+			{
+				RotatePropeller(propeller6, current_c2, dt);
+			}
+
+			if (enableAudio)
+			{
+				PlayAudio(current_c1);
+			}
+		}
+
 		private void PlayAudio(float my_controls)
 		{
 			if (audioSource == null || target_camera == null) return;
 
 			float distance = (target_camera.GlobalPosition - GlobalPosition).Length();
-			// Godot's AudioStreamPlayer3D handles attenuation automatically based on unit size and max distance.
-			// But we can manually adjust volume if needed.
-			// float volume = 1.0f - Mathf.Clamp((distance - minDistance) / (maxDistance - minDistance), 0, 1);
 
 			if (audioSource.Playing == false && my_controls > 0)
 			{
@@ -91,38 +131,23 @@ namespace hakoniwa.drone
 			}
 		}
 
-		private void RotatePropeller(Node3D propeller, float dutyRate)
+		private void RotatePropeller(Node3D propeller, float dutyRate, float dt)
 		{
-			if (propeller == null) return;
+			if (propeller == null || Mathf.Abs(dutyRate) < 0.0001f) return;
 			float rotationSpeed = maxRotationSpeed * dutyRate;
-			// Assuming Y-axis is rotation axis. RotateY takes radians.
-			propeller.RotateY(rotationSpeed * (float)GetProcessDeltaTime());
+			propeller.RotateY(rotationSpeed * dt);
 		}
 
 		public void Rotate(float c1, float c2, float c3, float c4)
 		{
-			RotatePropeller(propeller1, c1);
-			RotatePropeller(propeller2, -c2);
-			if (propeller3 != null)
+			current_c1 = c1;
+			current_c2 = c2;
+			current_c3 = c3;
+			current_c4 = c4;
+
+			if (droneSoundNode != null)
 			{
-				RotatePropeller(propeller3, c3);
-			}
-			if (propeller4 != null)
-			{
-				RotatePropeller(propeller4, -c4);
-			}
-			if (propeller5 != null)
-			{
-				RotatePropeller(propeller5, c1);
-			}
-			if (propeller6 != null)
-			{
-				RotatePropeller(propeller6, c2);
-			}
-			
-			if (enableAudio)
-			{
-				PlayAudio(c1);
+				droneSoundNode.Call("set_controls", c1, c2, c3, c4);
 			}
 		}
 	}

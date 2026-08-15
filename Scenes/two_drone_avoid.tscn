@@ -1,37 +1,32 @@
 [gd_scene format=3 uid="uid://bs3ns2drnavd1"]
 
 [ext_resource type="Script" uid="uid://bi7xlqcvlqkpu" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_gbdt5"]
-[ext_resource type="Script" uid="uid://c2np2chmdjnds" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_b7pws"]
-[ext_resource type="Script" path="res://Scripts/Components/Sensors/SensorVizRig.cs" id="sensorviz_1"]
-[ext_resource type="Script" path="res://Scripts/Components/Sensors/TwoDroneVizBootstrap.cs" id="twodrone_1"]
-[ext_resource type="Script" uid="uid://cp4v3xue2w0tx" path="res://Scripts/Drone/DroneCollision.cs" id="3_dxre5"]
-[ext_resource type="Script" uid="uid://e5jjjk5wiedi" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="4_3dyd2"]
-[ext_resource type="Script" uid="uid://bnytvp15laood" path="res://Scripts/Unity/Sensors/LiDAR/Default3DLiDARController.cs" id="5_e8cb3"]
-[ext_resource type="Script" uid="uid://cd6nsdw3fnbq0" path="res://Scripts/Drone/DronePropeller.cs" id="6_gfuh5"]
-[ext_resource type="PackedScene" path="res://Models/origin-01/origin-01.glb" id="origin01_body"]
-[ext_resource type="Script" path="res://Scripts/Components/Drone/OriginModelStyle.cs" id="model_style"]
-[ext_resource type="PackedScene" path="res://Models/origin-01/propeller_origin_01.glb" id="origin01_prop"]
-[ext_resource type="Script" uid="uid://bqbnmnfp7aoyr" path="res://Scripts/Hakoniwa/HakoSim/Drone/BaggageGrabber.cs" id="9_i4ev6"]
-[ext_resource type="Script" uid="uid://c67yo40ut53mq" path="res://Scripts/Unity/Baggage/Magnet.cs" id="10_oxpj0"]
-[ext_resource type="Script" uid="uid://s3qsyo8qv8qa" path="res://Scripts/Drone/DroneConfig.cs" id="11_bb4ut"]
-[ext_resource type="PackedScene" uid="uid://oycjxuiuwps0" path="res://Models/DroneCamera.glb" id="12_idqh5"]
-[ext_resource type="Script" uid="uid://rjbrx3thtsxt" path="res://Scripts/Unity/Sensors/Camera/DefaultCameraController.cs" id="13_5rb4j"]
-[ext_resource type="Script" uid="uid://c4g7wvet1d36v" path="res://Scripts/Hakoniwa/HakoSim/Drone/CameraController.cs" id="14_ox0gw"]
-[ext_resource type="Script" uid="uid://brafl0jav8h5n" path="res://Scripts/Hakoniwa/HakoSim/Drone/GameController.cs" id="15_vukou"]
-[ext_resource type="Material" uid="uid://be714h4dobqo" path="res://Materials/LED/RedOff.tres" id="16_5u3l5"]
-[ext_resource type="Script" uid="uid://dlf4oeacsdmoe" path="res://Scripts/Unity/DroneLedController.cs" id="17_n5fg8"]
-[ext_resource type="Material" uid="uid://31mtxr7r06o3" path="res://Materials/LED/Red.tres" id="18_l4phi"]
-[ext_resource type="Material" uid="uid://didpmfitwrcb0" path="res://Materials/LED/Green.tres" id="19_piv2x"]
-[ext_resource type="Material" uid="uid://u064ye5rlcbd" path="res://Materials/LED/Yellow.tres" id="20_yanwn"]
-[ext_resource type="Script" uid="uid://rcfj4kf6ddl7" path="res://Scripts/Unity/FlightModeLedController.cs" id="21_htewp"]
-[ext_resource type="Material" uid="uid://mbjha5aveaif" path="res://Materials/LED/Blue.tres" id="22_586ah"]
+[ext_resource type="Script" uid="uid://c2np2chmdjnds" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_8ya32"]
+[ext_resource type="Script" uid="uid://hnkugk6b8q2d" path="res://Scripts/Components/Sensors/SensorVizRig.cs" id="sensorviz_1"]
+[ext_resource type="Script" uid="uid://ddplixbagiicc" path="res://Scripts/Components/Sensors/TwoDroneVizBootstrap.cs" id="twodrone_1"]
+[ext_resource type="Script" uid="uid://cp4v3xue2w0tx" path="res://Scripts/Drone/DroneCollision.cs" id="3_gbmsj"]
+[ext_resource type="Script" uid="uid://e5jjjk5wiedi" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="4_lciqy"]
+[ext_resource type="Script" uid="uid://bnytvp15laood" path="res://Scripts/Components/Sensors/LiDAR/Default3DLiDARController.cs" id="5_tetom"]
+[ext_resource type="Script" uid="uid://cd6nsdw3fnbq0" path="res://Scripts/Drone/DronePropeller.cs" id="6_cyigi"]
+[ext_resource type="Script" uid="uid://s3qsyo8qv8qa" path="res://Scripts/Drone/DroneConfig.cs" id="11_qe1ky"]
+[ext_resource type="PackedScene" uid="uid://bj5nu0jr4rblc" path="res://Models/origin-01/origin_01_camera.glb" id="12_camera_glb"]
+[ext_resource type="Script" uid="uid://rjbrx3thtsxt" path="res://Scripts/Components/Sensors/Camera/DefaultCameraController.cs" id="13_fk0qn"]
+[ext_resource type="Script" uid="uid://c4g7wvet1d36v" path="res://Scripts/Hakoniwa/HakoSim/Drone/CameraController.cs" id="14_cqq1h"]
+[ext_resource type="Script" uid="uid://brafl0jav8h5n" path="res://Scripts/Hakoniwa/HakoSim/Drone/GameController.cs" id="15_vqtgq"]
+[ext_resource type="Material" uid="uid://be714h4dobqo" path="res://Materials/LED/RedOff.tres" id="16_imkp4"]
+[ext_resource type="Script" uid="uid://dlf4oeacsdmoe" path="res://Scripts/Components/DroneLedController.cs" id="17_rk45f"]
+[ext_resource type="Material" uid="uid://31mtxr7r06o3" path="res://Materials/LED/Red.tres" id="18_6uqni"]
+[ext_resource type="Material" uid="uid://didpmfitwrcb0" path="res://Materials/LED/Green.tres" id="19_qsd53"]
+[ext_resource type="Material" uid="uid://u064ye5rlcbd" path="res://Materials/LED/Yellow.tres" id="20_pjt85"]
+[ext_resource type="Script" uid="uid://rcfj4kf6ddl7" path="res://Scripts/Components/FlightModeLedController.cs" id="21_jujmc"]
+[ext_resource type="Material" uid="uid://mbjha5aveaif" path="res://Materials/LED/Blue.tres" id="22_m6uxv"]
 [ext_resource type="Script" uid="uid://un08ftc63xci" path="res://Scripts/Hakoniwa/HakoSim/GUI/SimStart.cs" id="23_b8lrn"]
 [ext_resource type="Script" uid="uid://dv64ldej8mdqn" path="res://Scripts/Hakoniwa/HakoSim/GUI/SimTime.cs" id="24_rtoji"]
-[ext_resource type="Script" uid="uid://clk3twok3vup6" path="res://Scripts/Unity/GUI/DroneBatteryUI.cs" id="25_61e2k"]
+[ext_resource type="Script" uid="uid://clk3twok3vup6" path="res://Scripts/Components/GUI/DroneBatteryUI.cs" id="25_61e2k"]
 [ext_resource type="Texture2D" uid="uid://bx8lav364pf5a" path="res://Materials/Textures/batt_emp.png" id="26_kdru8"]
 [ext_resource type="Texture2D" uid="uid://breaxtx7arl6q" path="res://Materials/Textures/batt_full.png" id="27_o2gd7"]
-[ext_resource type="Script" uid="uid://cd2p5ojfy01ut" path="res://Scripts/Unity/GUI/DronePos.cs" id="28_mr38n"]
-[ext_resource type="Script" uid="uid://4ymnssatgsso" path="res://Scripts/Unity/GUI/DroneMapUI.cs" id="29_43wo4"]
+[ext_resource type="Script" uid="uid://cd2p5ojfy01ut" path="res://Scripts/Components/GUI/DronePos.cs" id="28_mr38n"]
+[ext_resource type="Script" uid="uid://4ymnssatgsso" path="res://Scripts/Components/GUI/DroneMapUI.cs" id="29_43wo4"]
 [ext_resource type="Texture2D" uid="uid://b0cqips05y5ug" path="res://Materials/Textures/MapBackGround.png" id="30_hi0jk"]
 [ext_resource type="Texture2D" uid="uid://ddc1rfmp1kw40" path="res://Materials/Textures/map.png" id="31_q14kd"]
 [ext_resource type="Texture2D" uid="uid://0yfta5krnmmp" path="res://Materials/Textures/direction.png" id="32_qa8oq"]
@@ -42,24 +37,10 @@
 [ext_resource type="Texture2D" uid="uid://dyon3s887exfw" path="res://Materials/Textures/target.png" id="37_bduti"]
 [ext_resource type="Texture2D" uid="uid://g7h5ub2aqoq7" path="res://Materials/Textures/baggage.png" id="38_m2fli"]
 [ext_resource type="Texture2D" uid="uid://bktlwwmk25e2d" path="res://Materials/Textures/godot_texture2.png" id="39_8ud2m"]
-
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_d0svw"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_1csff"]
-size = Vector3(0.54, 0.18, 0.54)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dt7ya"]
-albedo_color = Color(0.06879827, 0.06879828, 0.06879828, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fcpor"]
-material = SubResource("StandardMaterial3D_dt7ya")
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_ywsav"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_1csff"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_dt7ya"]
-material = ExtResource("16_5u3l5")
+[ext_resource type="PackedScene" uid="uid://d2ac774nf7bsc" path="res://Models/origin-01/origin_01_body.tscn" id="43_origin01_body"]
+[ext_resource type="PackedScene" uid="uid://cnaclgbh5ijd0" path="res://Models/origin-01/propeller.tscn" id="44_propeller"]
+[ext_resource type="PackedScene" uid="uid://dfaiwj7mor6x3" path="res://Models/origin-01/origin_01_lidar.glb" id="45_origin01_lidar"]
+[ext_resource type="PackedScene" uid="uid://b2ermv3f42hxr" path="res://Models/origin-01/origin_01_lidar2.glb" id="46_origin01_lidar2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flw6q"]
 albedo_color = Color(0.023698878, 0.22197717, 0.06324865, 1)
@@ -113,9 +94,21 @@ sky_material = SubResource("ProceduralSkyMaterial_fcpor")
 background_mode = 2
 sky = SubResource("Sky_ywsav")
 
-[node name="two_drone_avoid" type="Node3D" unique_id=1437935397]
+[sub_resource type="BoxShape3D" id="BoxShape3D_gbmsj"]
+size = Vector3(2, 0.7, 2)
 
-[node name="Camera3D" type="Camera3D" parent="." unique_id=2109683039]
+[sub_resource type="BoxMesh" id="BoxMesh_led"]
+material = ExtResource("16_imkp4")
+
+[node name="hakoniwa_1" type="Node3D" unique_id=1437935397]
+
+[node name="TwoDroneBootstrap" type="Node" parent="." unique_id=2000000001]
+script = ExtResource("twodrone_1")
+PrimaryAvatarPath = NodePath("../DroneTranspoter")
+SecondRobotName = "Drone1"
+AlwaysEnabled = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=574990033]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4391567, 0.8322507)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1139128618]
@@ -123,167 +116,10 @@ transform = Transform3D(1, 0, 0, 0, 0.82253134, 0.5687198, 0, -0.5687198, 0.8225
 light_color = Color(1, 1, 0.9372549, 1)
 shadow_enabled = true
 
-[node name="TwoDroneBootstrap" type="Node" parent="."]
-script = ExtResource("twodrone_1")
-PrimaryAvatarPath = NodePath("../DRAvatar2")
-SecondRobotName = "Drone1"
-AlwaysEnabled = true
-
 [node name="Hakoniwa" type="Node3D" parent="." unique_id=111513354 node_paths=PackedStringArray("hakoObjects")]
 script = ExtResource("1_gbdt5")
 customJsonFilePath = "./avatar-drone.json"
-hakoObjects = [NodePath("../DRAvatar2")]
-
-[node name="DRAvatar2" type="Node3D" parent="." unique_id=457310837 node_paths=PackedStringArray("body", "rd", "droneCollisionNode")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.051187024, 0)
-script = ExtResource("2_b7pws")
-body = NodePath("origin_01")
-rd = NodePath("RigidBody3D")
-droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")
-
-[node name="RigidBody3D" type="RigidBody3D" parent="DRAvatar2" unique_id=663242323]
-physics_material_override = SubResource("PhysicsMaterial_d0svw")
-contact_monitor = true
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DRAvatar2/RigidBody3D" unique_id=1460571197]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1056, 0)
-shape = SubResource("BoxShape3D_1csff")
-debug_color = Color(0.9222214, 0.048371576, 0.6714262, 0.41960785)
-script = ExtResource("3_dxre5")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/RigidBody3D" unique_id=391620721]
-transform = Transform3D(0.5, 0, 0, 0, -1, -1.509958e-07, 0, 1.509958e-07, -1, 0, 0, 0)
-
-[node name="LiDAR" type="Node3D" parent="DRAvatar2" unique_id=1082138799]
-
-[node name="sensor" type="Node3D" parent="DRAvatar2/LiDAR" unique_id=906011756]
-
-[node name="box" type="MeshInstance3D" parent="DRAvatar2/LiDAR" unique_id=615816447]
-transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, -0.012109918, -0.11100012)
-mesh = SubResource("BoxMesh_fcpor")
-
-[node name="cylinder" type="MeshInstance3D" parent="DRAvatar2/LiDAR/box" unique_id=710034578]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, -0.47900963)
-mesh = SubResource("CylinderMesh_ywsav")
-
-[node name="Propellers" type="Node3D" parent="DRAvatar2" unique_id=1802599988 node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
-script = ExtResource("6_gfuh5")
-propeller1 = NodePath("propeller1")
-propeller2 = NodePath("propeller2")
-propeller3 = NodePath("propeller3")
-propeller4 = NodePath("propeller4")
-enableAudio = false
-maxRotationSpeed = 40000.0
-
-[node name="propeller1" parent="DRAvatar2/Propellers" unique_id=2124053533 instance=ExtResource("origin01_prop")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.2493, 0.1632, -0.2547)
-
-[node name="propeller2" parent="DRAvatar2/Propellers" unique_id=1305391490 instance=ExtResource("origin01_prop")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.2511, 0.1632, 0.2535)
-
-[node name="propeller3" parent="DRAvatar2/Propellers" unique_id=686500983 instance=ExtResource("origin01_prop")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.2511, 0.1632, -0.2547)
-
-[node name="propeller4" parent="DRAvatar2/Propellers" unique_id=1929523109 instance=ExtResource("origin01_prop")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.2493, 0.1632, 0.2535)
-
-[node name="origin_01" parent="DRAvatar2" unique_id=1292418912 instance=ExtResource("origin01_body")]
-transform = Transform3D(-0.3, 0, -2.6226834e-08, 0, 0.3, 0, 2.6226834e-08, 0, -0.3, 0, 0, 0)
-
-[node name="BaggageGrabber" type="Node3D" parent="DRAvatar2" unique_id=242141299]
-script = ExtResource("9_i4ev6")
-
-[node name="Magnet" type="Node3D" parent="DRAvatar2/BaggageGrabber" unique_id=2145280161 node_paths=PackedStringArray("magnetRenderer")]
-transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 1, -0.0035444275, -0.03789684, 0)
-script = ExtResource("10_oxpj0")
-magnetRenderer = NodePath("MeshInstance3D")
-detectionRange = 1.0
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DRAvatar2/BaggageGrabber/Magnet" unique_id=84757036]
-transform = Transform3D(0.04, 0, 0, 0, 0.006, 0, 0, 0, 0.04, 0, -0.04105076, 0)
-mesh = SubResource("BoxMesh_1csff")
-
-[node name="DroneConfig" type="Node3D" parent="DRAvatar2" unique_id=233300000]
-script = ExtResource("11_bb4ut")
-
-[node name="DroneCamera" parent="DRAvatar2" unique_id=794695372 instance=ExtResource("12_idqh5")]
-script = ExtResource("13_5rb4j")
-camera_move_up_deg = -90.0
-cameraOffset = Vector3(0, 0.45, 1.6)
-
-[node name="CameraController" type="Node3D" parent="DRAvatar2/DroneCamera" unique_id=320250055 node_paths=PackedStringArray("controllerNode")]
-script = ExtResource("14_ox0gw")
-controllerNode = NodePath("..")
-move_step = 0.2
-
-[node name="SubViewportContainer" type="SubViewportContainer" parent="DRAvatar2/DroneCamera/CameraController" unique_id=2014882371]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -350.0
-offset_top = 25.0
-offset_right = 290.0
-offset_bottom = 505.0
-grow_horizontal = 0
-scale = Vector2(0.5, 0.473)
-
-[node name="SubViewport" type="SubViewport" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer" unique_id=1140248028]
-handle_input_locally = false
-size = Vector2i(640, 480)
-render_target_update_mode = 4
-
-[node name="Camera3D" type="Camera3D" parent="DRAvatar2/DroneCamera/CameraController/SubViewportContainer/SubViewport" unique_id=843075335]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075306445, 0.26028758)
-current = true
-
-[node name="DroneTopCamera" parent="DRAvatar2" unique_id=1708032961 instance=ExtResource("12_idqh5")]
-
-[node name="GameController" type="Node3D" parent="DRAvatar2" unique_id=1308774521]
-script = ExtResource("15_vukou")
-
-[node name="LED_Back" type="MeshInstance3D" parent="DRAvatar2" unique_id=130670884 node_paths=PackedStringArray("ledRenderer")]
-transform = Transform3D(0.011414111, 0, 0, 0, -3.059797e-10, -0.012187872, 0, 0.007, -5.327488e-10, -0.0049576648, -0.009400092, 0.047306485)
-mesh = SubResource("BoxMesh_dt7ya")
-script = ExtResource("17_n5fg8")
-ledRenderer = NodePath(".")
-disarmMaterial = ExtResource("16_5u3l5")
-takeoffMaterial = ExtResource("18_l4phi")
-hoverMaterial = ExtResource("19_piv2x")
-landingMaterial = ExtResource("20_yanwn")
-takeoffBlinkInterval = 0.2
-landingBlinkInterval = 0.2
-
-[node name="LED_Front" type="MeshInstance3D" parent="DRAvatar2" unique_id=72966029 node_paths=PackedStringArray("ledRenderer")]
-transform = Transform3D(0.02, 0, 0, 0, 0.007, 0, 0, 0, 0.025, 0, 0.019269645, -0.06971371)
-mesh = SubResource("BoxMesh_dt7ya")
-script = ExtResource("17_n5fg8")
-ledRenderer = NodePath(".")
-disarmMaterial = ExtResource("16_5u3l5")
-takeoffMaterial = ExtResource("18_l4phi")
-hoverMaterial = ExtResource("19_piv2x")
-landingMaterial = ExtResource("20_yanwn")
-takeoffBlinkInterval = 0.2
-landingBlinkInterval = 0.2
-
-[node name="LED_FlightModeBack" type="MeshInstance3D" parent="DRAvatar2" unique_id=985950042 node_paths=PackedStringArray("ledRenderer")]
-transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0.014299899, 0.040466093)
-mesh = SubResource("BoxMesh_dt7ya")
-script = ExtResource("21_htewp")
-ledRenderer = NodePath(".")
-attiMaterial = ExtResource("18_l4phi")
-gpsMaterial = ExtResource("22_586ah")
-offMaterial = ExtResource("16_5u3l5")
-attiBlinkInterval = 0.2
-
-[node name="LED_FlightModeFront" type="MeshInstance3D" parent="DRAvatar2" unique_id=2057056905 node_paths=PackedStringArray("ledRenderer")]
-transform = Transform3D(0.005, 0, 0, 0, 0.005, 0, 0, 0, 0.004, 0, 0.019458268, -0.083477855)
-mesh = SubResource("BoxMesh_dt7ya")
-script = ExtResource("21_htewp")
-ledRenderer = NodePath(".")
-attiMaterial = ExtResource("18_l4phi")
-gpsMaterial = ExtResource("22_586ah")
-offMaterial = ExtResource("16_5u3l5")
-attiBlinkInterval = 0.2
+hakoObjects = [NodePath("../DroneTranspoter")]
 
 [node name="GUI" type="Node3D" parent="." unique_id=561515843]
 visible = false
@@ -326,7 +162,7 @@ currVoltageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_currVoltage")
 percentageText = NodePath("HBoxContainer/VBoxContainer_value/lbl_percentage")
 tempText = NodePath("HBoxContainer/VBoxContainer_value/lbl_temperature")
 pressureText = NodePath("HBoxContainer/VBoxContainer_value/lbl_pressure")
-battery = NodePath("../../../DRAvatar2")
+battery = NodePath("../../../DroneTranspoter")
 
 [node name="TextureProgressBar_battery" type="TextureProgressBar" parent="GUI/CanvasLayer/InfoPanel" unique_id=397259360]
 anchors_preset = 2
@@ -456,7 +292,7 @@ grow_vertical = 0
 size_flags_horizontal = 8
 theme_override_constants/separation = 0
 script = ExtResource("28_mr38n")
-drone = NodePath("../../../../DRAvatar2")
+drone = NodePath("../../../../DroneTranspoter")
 altitudeText = NodePath("lbl_altitude")
 positionText = NodePath("lbl_distance")
 velocityText = NodePath("lbl_position")
@@ -502,7 +338,7 @@ offset_bottom = -15.0
 grow_vertical = 0
 size_flags_horizontal = 8
 script = ExtResource("29_43wo4")
-drone = NodePath("../../../../DRAvatar2")
+drone = NodePath("../../../../DroneTranspoter")
 map = NodePath("Map")
 droneIcon = NodePath("DroneIcon")
 droneRollIcon = NodePath("RollIcon")
@@ -609,7 +445,7 @@ current = true
 size = 0.5
 near = 0.01
 script = ExtResource("36_v8m31")
-DroneNode = NodePath("../../../../../../DRAvatar2")
+DroneNode = NodePath("../../../../../../DroneTranspoter")
 Offset = Vector3(0, 0.013, 0)
 CameraRotate = 90.0
 
@@ -643,7 +479,7 @@ current = true
 size = 0.3
 near = 0.01
 script = ExtResource("36_v8m31")
-DroneNode = NodePath("../../../../../../DRAvatar2")
+DroneNode = NodePath("../../../../../../DroneTranspoter")
 Offset = Vector3(0, 0, -0.1)
 CameraRotate = 0.0
 
@@ -666,14 +502,196 @@ transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.059541807, 0)
 visible = false
 mesh = SubResource("PlaneMesh_dt7ya")
 
+[node name="Floor" type="StaticBody3D" parent="." unique_id=13335313]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.060149178, -9.7048855)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=978379257]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8474503, -0.10000001, -1.2446606e-07)
+mesh = SubResource("BoxMesh_am0b1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1002953058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_d3neh")
+debug_color = Color(0.85617214, 0.00075526774, 0.88560927, 0.41960785)
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2108110333]
 environment = SubResource("Environment_am0b1")
 
-[node name="SensorViz" type="Node3D" parent="DRAvatar2"]
-script = ExtResource("sensorviz_1")
-ShowDetectionLabels = false
+[node name="DroneTranspoter" type="Node3D" parent="." unique_id=2126820550 node_paths=PackedStringArray("body", "rd", "droneCollisionNode", "leds", "flight_mode_leds")]
+script = ExtResource("2_8ya32")
+body = NodePath("DroneTranspoter")
+rd = NodePath("RigidBody3D")
+droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")
+leds = [NodePath("LEDs/LED_Back"), NodePath("LEDs/LED_Back2"), NodePath("LEDs/LED_Front"), NodePath("LEDs/LED_Front2")]
+flight_mode_leds = [NodePath("LEDs/LED_FlightModeBack"), NodePath("LEDs/LED_FlightModeFront"), NodePath("LEDs/LED_FlightModeFront2")]
 
-[node name="ModelStyle" type="Node3D" parent="DRAvatar2"]
-script = ExtResource("model_style")
+[node name="DroneTranspoter" parent="DroneTranspoter" unique_id=1414509860 instance=ExtResource("43_origin01_body")]
+
+[node name="RigidBody3D" type="RigidBody3D" parent="DroneTranspoter" unique_id=1903131097]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DroneTranspoter/RigidBody3D" unique_id=1836186978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+shape = SubResource("BoxShape3D_gbmsj")
+script = ExtResource("3_gbmsj")
+
+[node name="properllers" type="Node3D" parent="DroneTranspoter" unique_id=280928193 node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
+script = ExtResource("6_cyigi")
+propeller1 = NodePath("propeller0")
+propeller2 = NodePath("propeller1")
+propeller3 = NodePath("propeller2")
+propeller4 = NodePath("propeller3")
+maxRotationSpeed = 40000.0
+
+[node name="propeller0" parent="DroneTranspoter/properllers" unique_id=611529083 instance=ExtResource("44_propeller")]
+transform = Transform3D(0.36, 0, 0, 0, 0.596, 0, 0, 0, 0.305, -0.83739424, 0.55072665, -0.8500763)
+
+[node name="propeller1" parent="DroneTranspoter/properllers" unique_id=1396456694 instance=ExtResource("44_propeller")]
+transform = Transform3D(0.36, 0, 0, 0, 0.596, 0, 0, 0, 0.305, -0.83739424, 0.55072665, 0.8446909)
+
+[node name="propeller2" parent="DroneTranspoter/properllers" unique_id=1390490675 instance=ExtResource("44_propeller")]
+transform = Transform3D(0.36, 0, 0, 0, 0.596, 0, 0, 0, 0.30500004, 0.8310652, 0.55072665, -0.8500763)
+
+[node name="propeller3" parent="DroneTranspoter/properllers" unique_id=509171695 instance=ExtResource("44_propeller")]
+transform = Transform3D(0.36, 0, 0, 0, 0.596, 0, 0, 0, 0.30500004, 0.8310652, 0.55072665, 0.84478956)
+
+[node name="DroneConfig" type="Node3D" parent="DroneTranspoter" unique_id=1323272776]
+script = ExtResource("11_qe1ky")
+
+[node name="LiDAR" type="Node3D" parent="DroneTranspoter" unique_id=1722723448]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.382, -0.44)
+script = ExtResource("4_lciqy")
+
+[node name="sensor" type="Node3D" parent="DroneTranspoter/LiDAR" unique_id=246276650]
+script = ExtResource("5_tetom")
+
+[node name="Visual" parent="DroneTranspoter/LiDAR" instance=ExtResource("45_origin01_lidar")]
+
+[node name="LiDAR2" type="Node3D" parent="DroneTranspoter" unique_id=1722723449]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.218, 0)
+
+[node name="Visual" parent="DroneTranspoter/LiDAR2" instance=ExtResource("46_origin01_lidar2")]
+
+[node name="DroneCamera" parent="DroneTranspoter" unique_id=1164422824 instance=ExtResource("12_camera_glb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.218, -0.54)
+script = ExtResource("13_fk0qn")
+camera_move_up_deg = -90.0
+cameraOffset = Vector3(0, 0, 0)
+
+[node name="CameraController" type="Node3D" parent="DroneTranspoter/DroneCamera" unique_id=76656212 node_paths=PackedStringArray("controllerNode")]
+script = ExtResource("14_cqq1h")
+controllerNode = NodePath("..")
+move_step = 0.2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="DroneTranspoter/DroneCamera/CameraController" unique_id=419201116]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -350.0
+offset_top = 25.0
+offset_right = 290.0
+offset_bottom = 505.0
+grow_horizontal = 0
+scale = Vector2(0.5, 0.473)
+
+[node name="SubViewport" type="SubViewport" parent="DroneTranspoter/DroneCamera/CameraController/SubViewportContainer" unique_id=920513526]
+handle_input_locally = false
+size = Vector2i(640, 480)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="DroneTranspoter/DroneCamera/CameraController/SubViewportContainer/SubViewport" unique_id=1402269016]
+current = true
+
+[node name="GameController" type="Node3D" parent="DroneTranspoter" unique_id=2059214657]
+script = ExtResource("15_vqtgq")
+
+[node name="LEDs" type="Node3D" parent="DroneTranspoter" unique_id=723754792]
+
+[node name="LED_Back" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=1956659375 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.07106646, -0.0140526, -0.0035594048, -7.639394e-10, -0.0010118684, 0.09987193, -0.0703531, 0.014195089, 0.0035954944, -0.8797481, 0.47373593, 0.8883581)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("17_rk45f")
+ledRenderer = NodePath(".")
+disarmMaterial = ExtResource("16_imkp4")
+takeoffMaterial = ExtResource("18_6uqni")
+hoverMaterial = ExtResource("19_qsd53")
+landingMaterial = ExtResource("20_pjt85")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+
+[node name="LED_Back2" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=267789231 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.07107996, 0.0140498765, 0.0035586809, 4.422976e-10, -0.0010118588, 0.09987193, 0.07033946, 0.014197785, 0.0035961443, 0.88, 0.474, 0.888)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("17_rk45f")
+ledRenderer = NodePath(".")
+disarmMaterial = ExtResource("16_imkp4")
+takeoffMaterial = ExtResource("18_6uqni")
+hoverMaterial = ExtResource("19_qsd53")
+landingMaterial = ExtResource("20_pjt85")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+
+[node name="LED_Front" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=1640150338 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.07107995, -0.014049879, -0.0035586809, 4.422976e-10, -0.0010118588, 0.09987193, -0.07033948, 0.014197784, 0.0035961443, 0.8768338, 0.474, -0.887988)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("17_rk45f")
+ledRenderer = NodePath(".")
+disarmMaterial = ExtResource("16_imkp4")
+takeoffMaterial = ExtResource("18_6uqni")
+hoverMaterial = ExtResource("19_qsd53")
+landingMaterial = ExtResource("20_pjt85")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+
+[node name="LED_Front2" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=410012528 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.071079955, 0.014049879, 0.0035586809, -4.4229762e-10, -0.0010118588, 0.09987193, 0.070339486, 0.014197784, 0.0035961443, -0.877, 0.474, -0.888)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("17_rk45f")
+ledRenderer = NodePath(".")
+disarmMaterial = ExtResource("16_imkp4")
+takeoffMaterial = ExtResource("18_6uqni")
+hoverMaterial = ExtResource("19_qsd53")
+landingMaterial = ExtResource("20_pjt85")
+takeoffBlinkInterval = 0.2
+landingBlinkInterval = 0.2
+
+[node name="LED_FlightModeBack" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=1941240373 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.069279335, 8.272889e-10, 0, -6.056592e-09, -0.009463082, 0, 0, 0, 0.15091167, 3.4698793e-09, 0.64217466, 0.35986006)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("21_jujmc")
+ledRenderer = NodePath(".")
+attiMaterial = ExtResource("18_6uqni")
+gpsMaterial = ExtResource("22_m6uxv")
+offMaterial = ExtResource("16_imkp4")
+attiBlinkInterval = 0.2
+
+[node name="LED_FlightModeFront" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=2086514315 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.07001226, 0.034988295, 0.00472129, -0.0422289, -0.056579396, 0.02306037, 0.008309516, 0.0072595794, 0.15697217, -0.18542671, 0.57578105, -0.18082988)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("21_jujmc")
+ledRenderer = NodePath(".")
+attiMaterial = ExtResource("18_6uqni")
+gpsMaterial = ExtResource("22_m6uxv")
+offMaterial = ExtResource("16_imkp4")
+attiBlinkInterval = 0.2
+
+[node name="LED_FlightModeFront2" type="MeshInstance3D" parent="DroneTranspoter/LEDs" unique_id=1790885040 node_paths=PackedStringArray("ledRenderer")]
+transform = Transform3D(-0.070376106, -0.034502443, 0.004658326, 0.04223762, -0.05656586, 0.023187354, -0.0041511413, 0.009380606, 0.15695535, 0.185, 0.576, -0.181)
+mesh = SubResource("BoxMesh_led")
+skeleton = NodePath("../../DroneCamera")
+script = ExtResource("21_jujmc")
+ledRenderer = NodePath(".")
+attiMaterial = ExtResource("18_6uqni")
+gpsMaterial = ExtResource("22_m6uxv")
+offMaterial = ExtResource("16_imkp4")
+attiBlinkInterval = 0.2
+
+[node name="SensorViz" type="Node3D" parent="DroneTranspoter"]
+script = ExtResource("sensorviz_1")
 
 [connection signal="pressed" from="GUI/CanvasLayer/Control/Button_Start" to="GUI" method="OnButtonClick"]

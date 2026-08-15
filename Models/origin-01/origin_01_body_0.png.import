@@ -2,17 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1hdaknramxb5"
-path.s3tc="res://.godot/imported/origin-01_Hodaka-ver1.jpg-4235481d7b6781f5e54ace21c676a6c7.s3tc.ctex"
+uid="uid://cvc40oc5c3bny"
+path.s3tc="res://.godot/imported/origin_01_body_0.png-97bddf96929d80cb057c17ac0156123d.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
+generator_parameters={
+"md5": "34d9e407b224680f4b5cfe69a49b2c35"
+}
 
 [deps]
 
-source_file="res://Models/origin-01/origin-01_Hodaka-ver1.jpg"
-dest_files=["res://.godot/imported/origin-01_Hodaka-ver1.jpg-4235481d7b6781f5e54ace21c676a6c7.s3tc.ctex"]
+source_file="res://Models/origin-01/origin_01_body_0.png"
+dest_files=["res://.godot/imported/origin_01_body_0.png-97bddf96929d80cb057c17ac0156123d.s3tc.ctex"]
 
 [params]
 

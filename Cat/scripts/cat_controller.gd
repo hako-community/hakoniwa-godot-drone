@@ -25,8 +25,8 @@ const ANIM := {
 @export var turn_speed := 8.0    # 旋回の追従率 (rad/s 相当の lerp 係数)
 @export var blend := 0.15        # アニメのクロスフェード秒
 ## すり足対策: 歩き/走りの足運び速度倍率。足が地面に対して滑る（すり足）なら上げる（1.3〜1.6目安）。
-@export var walk_anim_speed := 1.0
-@export var run_anim_speed := 1.0
+@export var walk_anim_speed := 1.4
+@export var run_anim_speed := 1.4
 
 # --- Jump（P5-3 実測値。jump_test.gd と同じ）---
 const JUMP_LAUNCH_T := 0.58   # アニメのこの時刻で蹴り出し（それまではタメ）

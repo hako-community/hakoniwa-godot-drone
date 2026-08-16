@@ -1,0 +1,88 @@
+[gd_scene load_steps=8 format=3]
+
+; drone3（大型の 8 発機）の可視化専用シーン。
+; 箱庭 PDU 統合（M2）が入る前でも 8 発の見た目と ch 対応を確認できるように、
+; DronePropellerDemoDriver から直接指令を与えている。
+; ch 番号は MuJoCo 側のモデル定義（drone3_meta.json の rotors[].index）に一致させてある。
+; ★ .blend のロータ名は前後が反転しているため、ch0（機体前方内側左）は
+;   glb 上の rotor_rear_inner_left である。名前ではなく meta の blend_name で対応づけること。
+
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropeller.cs" id="1_prop"]
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropellerDemoDriver.cs" id="2_drv"]
+[ext_resource type="PackedScene" path="res://Models/drone3/drone3.glb" id="3_model"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_color = Color(0.32, 0.34, 0.36, 1)
+
+[sub_resource type="PlaneMesh" id="Mesh_ground"]
+material = SubResource("Mat_ground")
+size = Vector2(40, 40)
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("Sky_mat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+tonemap_mode = 2
+
+[node name="Drone3Viz" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.768221, -0.504536, 0.394055, 0, 0.615534, 0.78811, -0.640184, -0.605443, 0.472866, 0, 6, 0)
+shadow_enabled = true
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_ground")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.77193, -0.147415, 0.618379, 0, 0.972742, 0.231892, -0.635707, -0.179004, 0.750889, 2.8, 1.6, 3.4)
+fov = 40.0
+
+; 真上から見るカメラ。画面上＝機首(+Z)、画面右＝機体右(-X) になるようにしている
+; （このリポジトリの機体は 機首=+Z / 右=-X / 上=+Y。DroneAvatar*.UpdatePosition の
+;   Godot.Z=hako.x, Godot.X=-hako.y, Godot.Y=hako.z と同じ向き）
+[node name="TopCamera" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 7, 0)
+fov = 40.0
+current = false
+
+[node name="Drone3" type="Node3D" parent="."]
+
+[node name="model" parent="Drone3" instance=ExtResource("3_model")]
+; y=0.580595 … .blend 原点はスキッド接地面より 0.580595 m 上（drone3_meta.json の spawn_z_m）
+; 180 度ヨー … glb の機首は -Z、このリポジトリの機体は機首 +Z（Unity 由来）なので合わせる
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.580595, 0)
+
+[node name="Propellers" type="Node3D" parent="Drone3"]
+script = ExtResource("1_prop")
+propellerNodeNames = PackedStringArray("rotor_rear_inner_left_spin", "rotor_rear_inner_right_spin", "rotor_rear_outer_left_spin", "rotor_rear_outer_right_spin", "rotor_front_outer_left_spin", "rotor_front_outer_right_spin", "rotor_front_inner_left_spin", "rotor_front_inner_right_spin")
+propellerSearchRoot = NodePath("..")
+spinDirections = PackedInt32Array(1, -1, -1, 1, 1, -1, -1, 1)
+enableAudio = false
+maxRotationSpeed = 250.0
+
+[node name="Driver" type="Node3D" parent="." node_paths=PackedStringArray("statusLabel")]
+script = ExtResource("2_drv")
+propellerPath = NodePath("../Drone3/Propellers")
+control = 0.6
+sequential = false
+cycleSeconds = 1.0
+selfTest = false
+topCameraPath = NodePath("../TopCamera")
+orbitTargetPath = NodePath("../Drone3")
+statusLabel = NodePath("../HUD/Status")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 700.0
+offset_bottom = 40.0
+text = "drone3 viz"

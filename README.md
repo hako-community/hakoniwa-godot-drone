@@ -14,10 +14,11 @@ Godot 4 上で動作するオープンソースの**箱庭ドローンシミュ�
 | **センサー可視化** | `Scenes/sensor_viz.tscn` | ・LiDAR 点群（PointCloud）および Radar 探知範囲のリアルタイム 3D 描画<br>・障害物・環境メッシュとの干渉可視化 |
 | **複数機体回避** | `Scenes/two_drone_avoid.tscn` | ・2機のドローン（自機・僚機）による近接検知・衝突回避シミュレーション |
 | **AI猫インタラクション** | `Scenes/drone_cat_1.tscn` | ・ドローンを追跡・跳躍攻撃する AI 猫（Cat モジュール）とのインタラクティブ飛行 |
+| **8 発機（drone3）** | `Scenes/drone3_hako.tscn`<br>`Scenes/drone3_viz.tscn` | ・**ロータ 8 発**の大型物流ドローン `drone3` の可視化（`DronePropeller` の N 発対応の実例）<br>・`drone3_hako`: 箱庭 PDU（`Drone/pos`・`Drone/motor`）で外部の物理シミュレータから駆動<br>・`drone3_viz`: 箱庭なしでデモ駆動・ch とロータの対応づけの自動検証（`-- --selftest`） |
 
 ---
 
-## 搭載機体モデル: `Origin-01`
+## 搭載機体モデル: `Origin-01` / `drone3`
 
 本リポジトリでは、完全オープンソースでモジュール化された標準ドローンモデル **`Origin-01`**（`Models/origin-01/`）を採用しています。
 
@@ -27,6 +28,11 @@ Godot 4 上で動作するオープンソースの**箱庭ドローンシミュ�
   - `origin_01_camera.glb` / `origin_01_lidar.glb` / `origin_01_transporter.glb`: 各種拡張センサー・アタッチメント
 - **物理・スケール**:
   - 実寸大スケール（1:1）および `parts_param.json` に基づく物理プロパティ定義
+
+`Models/drone3/` には、共同研究で扱っている**ロータ 8 発の大型物流ドローン `drone3`**（差し渡し約 3.4 m）も
+収録しています。**ロータが 4 発でない機体**を扱う際の実例として利用できます
+（`DronePropeller` の N 発対応・回転方向の個別指定・ch とロータの対応づけの自動検証）。
+詳細は `Models/drone3/README.md`。
 
 ---
 

@@ -13,14 +13,6 @@
 /avatar-drone.csv.import
 /icon.svg.import
 
-# === 非公開の機体データ ===
-# このリポジトリは PUBLIC。共同研究の機体（drone3）のモデル・諸元・専用シーンは
-# 公開できないため、ローカル限定で扱う。関連ファイルを増やしたら必ずここにも登録すること。
-/Models/drone3/
-/Scenes/drone3_viz.tscn
-/Scenes/drone3_hako.tscn
-/config/drone3_custom.json
-
 # Case-variant duplicate strays of the tracked Ev3Pdu*.json (Ev3 vs EV3)
 /ros_types/json/ev3_msgs/EV3PduActuator.json
 /ros_types/json/ev3_msgs/EV3PduSensor.json

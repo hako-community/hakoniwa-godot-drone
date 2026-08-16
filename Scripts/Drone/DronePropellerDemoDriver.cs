@@ -70,6 +70,8 @@ namespace hakoniwa.drone
 		// selfTest 用
 		private float[] prevAngle;      // 前フレームの各ロータの Rotation.Y
 		private float[] accumAngle;     // 現 ch の間に積算した回転量（rad, 符号つき）
+		/// ch 切替直後、積算を止めるフレーム数（指令保持方式のための整定待ち）
+		private int settleFrames;
 		private int checkedCh = 0;
 		private int okCount = 0;
 		private bool finished = false;
@@ -189,6 +191,12 @@ namespace hakoniwa.drone
 				JudgeChannel(activeCh, n);
 				checkedCh++;
 				Array.Clear(accumAngle, 0, accumAngle.Length);
+				// ★ DronePropeller は「指令を保持して毎フレーム回す」方式（_Process）なので、
+				//   ch を切り替えた直後の 1〜2 フレームは **前の ch の指令のまま回る**
+				//   （ノードの _Process 順序は保証されない）。
+				//   その回転を新しい ch の測定窓に入れると、他ロータが動いたように見えて
+				//   必ず NG になる。切替直後は積算をスキップする。
+				settleFrames = 2;
 				if (checkedCh >= n)
 				{
 					Finish(n);
@@ -210,9 +218,14 @@ namespace hakoniwa.drone
 				float d = cur - prevAngle[i];
 				while (d > Mathf.Pi) d -= Mathf.Tau;
 				while (d < -Mathf.Pi) d += Mathf.Tau;
-				accumAngle[i] += d;
+				// 切替直後は前の指令の回転が残っているので積算しない（基準だけ更新する）
+				if (settleFrames <= 0)
+				{
+					accumAngle[i] += d;
+				}
 				prevAngle[i] = cur;
 			}
+			if (settleFrames > 0) settleFrames--;
 
 			if (statusLabel != null)
 			{

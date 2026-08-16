@@ -1,151 +1,92 @@
 # hakoniwa-godot-drone
-このリポジトリでは、Godot上で箱庭ドローンの物理モデルをビジュアライズ・操作できる環境を提供します。
 
-## 使い方
-箱庭コアと連携動作するライブラリ類は自動的に読まないので、hakoniwa-godot-droneディレクトリの直下に
-プラグインのディレクトリからコピーしてください。
+Godot 4 上で動作するオープンソースの**箱庭ドローンシミュレータ基盤（Godot / C# エディション）**です。
 
-### プラグインのディレクトリ構成
+箱庭（Hakoniwa）シミュレーションフレームワークと連携し、ドローンの物理演算・モーター推力制御・各種センサー（LiDAR, Radar, カメラ）のリアルタイム可視化およびインタラクティブな操縦環境を提供します。
 
-クロスプラットフォーム対応は、[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)と同様です。ディレクトリ構成は違っています。hakoniwa-unity-droneは、一部の共有ライブラリが`Unity Package Manager`で管理されていますが、hakoniwa-godot-droneは、addonでの管理がされていないため必要なライブラリを配置しています。
+---
 
-```tree
-Plugins/
-├── Android
-│   └── ARM64
-├── Linux
-│   └── x86_64
-├── Windows
-│   └── x86_64
-└── macOS
-    └── ARM64
-```
+## 主な機能と収録シーン
 
-## 箱庭ドローンシミュレータ Godot版の利用方法
+| シーン | パス | 主な内容・機能 |
+| :--- | :--- | :--- |
+| **基本ドローン** | `Scenes/drone_1.tscn` | ・標準機体 `Origin-01` による飛行シミュレーション<br>・バッテリー残量・電圧、姿勢（ロール/ピッチ）、方位マップHUD<br>・インプロセス・スタンドアロン実行対応 |
+| **センサー可視化** | `Scenes/sensor_viz.tscn` | ・LiDAR 点群（PointCloud）および Radar 探知範囲のリアルタイム 3D 描画<br>・障害物・環境メッシュとの干渉可視化 |
+| **複数機体回避** | `Scenes/two_drone_avoid.tscn` | ・2機のドローン（自機・僚機）による近接検知・衝突回避シミュレーション |
+| **AI猫インタラクション** | `Scenes/drone_cat_1.tscn` | ・ドローンを追跡・跳躍攻撃する AI 猫（Cat モジュール）とのインタラクティブ飛行 |
 
-インストール、操作方法は、以下のドキュメントを公開していますので、参照してください。
+---
 
-[箱庭ドローンシミュレータ Godot版 操作方法](https://github.com/buildko89/documents/blob/main/hakodoc/howto-doc/hakowithgodot.md)
+## 搭載機体モデル: `Origin-01`
 
-## 動作確認Version
+本リポジトリでは、完全オープンソースでモジュール化された標準ドローンモデル **`Origin-01`**（`Models/origin-01/`）を採用しています。
 
-- Windows
+- **モジュール構造**:
+  - `origin_01_body.tscn`: メインフレーム・キャノピー
+  - `propeller.tscn`: 高速回転アニメーション対応の黒色プロペラ
+  - `origin_01_camera.glb` / `origin_01_lidar.glb` / `origin_01_transporter.glb`: 各種拡張センサー・アタッチメント
+- **物理・スケール**:
+  - 実寸大スケール（1:1）および `parts_param.json` に基づく物理プロパティ定義
 
-  - Godot_v4.6-stable_mono
-
-- Mac
-
-  - Windowsと同様4.6
-
+---
 
 ## ディレクトリ構成
 
-このプロジェクトのディレクトリ構成は以下のとおりです：
-
 ```tree
-├── Cat            # AI猫モジュール（後述: scenes / scripts / モデル）
-├── Materials
-├── Models
-├── Plugins
-├── Scripts
-│   ├── ARBridge
-│   ├── Drone
-│   ├── Hakoniwa
-│   │   ├── Device
-│   │   ├── HakoPdu
-│   │   └── HakoSim
-│   ├── Interfaces
-│   ├── Componets
-│   ├── hakoniwa-pdu
-│   └── hakoniwa-sim
-├── addons
-├── config
-└── ros_types
-[その他設定ファイル類]
+hakoniwa-godot-drone/
+├── Cat/                     # AI猫モジュール（追跡ロジック、3Dモデル、テストシーン）
+├── Materials/               # シェーダー、LEDマテリアル、テクスチャ
+├── Models/                  # 機体・アタッチメントモデル (origin-01)
+├── Plugins/                 # 各OS向け箱庭ネイティブ通信ライブラリ (DLL / SO / DYLIB)
+│   ├── Android/ARM64
+│   ├── Linux/x86_64
+│   ├── Windows/x86_64
+│   └── macOS/ARM64
+├── Scenes/                  # メイン実行シーン群
+├── Scripts/                 # C# および GDScript スクリプト
+│   ├── Drone/               # 物理衝突・プロペラ・サウンド制御
+│   ├── Components/          # センサー（LiDAR/Radar）、LED、UI
+│   ├── hakoniwa-pdu/        # 箱庭 PDU メッセージ定義・シリアライザ
+│   └── hakoniwa-sim/        # 箱庭アセット基盤 (HakoAsset)
+├── config/                  # コントローラー・機体設定パラメータ
+├── ros_types/               # ROS 2 / 箱庭 PDU 型定義・オフセット
+├── project.godot            # Godot プロジェクト設定
+└── hakoniwa_1.csproj        # .NET / C# プロジェクト定義
 ```
 
-## 利用環境
+---
 
-ドローンの基本的な飛行テストができる[hakoniwa-unity-drone](https://github.com/hakoniwalab/hakoniwa-unity-drone)のGodot環境への移植版になります。
+## 動作環境 & 必要要件
 
-# hakoniwa-godot-droneでの利用モデル
+- **Godot Engine**: `Godot 4.7-stable_mono` (C# / .NET 対応版)
+- **.NET SDK**: `.NET 8.0` または `.NET 9.0`
+- **サポートOS**:
+  - Windows 10 / 11 (64-bit)
+  - macOS (Apple Silicon / Intel)
+  - Linux (Ubuntu 22.04+ 等, x86_64)
+  - Android (ARM64)
 
-このプロジェクトでは、以下のモデルが含まれています：
+---
 
-## `SimpleDrone`：基本的なドローンモデル
-- 3Dモデル：`drone-quadcopter.dae`
-  - ベースモデル(実機)：https://holybro.com/products/px4-development-kit-x500-v2?variant=43018371596477
-  - 取得元：[OnShape](https://www.onshape.com/en/)
-    - 参照URL：https://cad.onshape.com/documents/309acdd0886d0292a98383c2/w/cf26e885b6bdbeacdfee62cf/e/f5458a8dd2d6f5c8dc2574a3
+## 使い方
 
-## `Rover`：基本的なドローンモデル
-- 3Dモデル：`Turtlebot3.dae`
-  - 取得元：[OnShape](https://www.onshape.com/en/)
-    - 参照URL：https://cad.onshape.com/documents/58a2bdd2a263420f7a316285/w/01c383d9ab503ce7a7c42e3c/e/16a05a97d362a47b16a8f117
+### 1. プロジェクトの起動
 
-## `DJIAvatar`: ドローンモデル
-- 3Dモデル：`dji_avatar2.dae`
-  - 取得元：[OnShape](https://www.onshape.com/en/)
-    - 参照URL：https://cad.onshape.com/documents/8302790419ef6b56cd1eb03c/w/dad3a9c868c42504811a0d26/e/c8d69131de8ac6383b17593b
+1. 本リポジトリをクローンします：
+   ```bash
+   git clone https://github.com/hako-community/hakoniwa-godot-drone.git
+   ```
+2. Godot Engine (Mono版) を起動し、本フォルダの `project.godot` を読み込みます。
+3. `Scenes/drone_1.tscn` などを開いて「プロジェクトを実行（F5）」または「現在のシーンを実行（F6）」します。
 
-## `pylon`：三角コーン
-- 3dモデル：`pylon.fbx`
-  - 取得元：[3D屋さん](https://3dyasan.com/)
-    - 参照URL：https://3dyasan.com/2021/05/10/pylon
+### 2. 箱庭外部制御 / シミュレーション連携
 
-## モデルの用途
-本リポジトリでは、上述のパブリックモデルを **シミュレーション環境でのビジュアライゼーション用途として** 使用しています。これらのモデルは物理演算やシミュレーションのテストに活用されますが、再配布や改変後の利用については保証されません。
+箱庭コンダクタや外部コントローラ（PX4 / ROS 2 / Python API 等）と通信連携して実行する場合は、箱庭の標準ワークフローに従ってコンダクタを起動後に Godot 側の「START」ボタンを押下してシミュレーションを開始します。
 
-## 注意
-これらのモデルはOnShape上のパブリックドキュメントから取得しています。本プロジェクトでは研究・非商用目的で使用していますが、OnShapeのパブリックドキュメントにはライセンス表記がないため、著作権や利用規約については各モデルの作成者に依存する可能性があります。
+---
 
-そのため、商用利用や再配布を行う場合は、各モデルの作成者にライセンスを確認する必要があります。
+## ライセンス
 
-# AI猫によるドローン追跡（Cat モジュール）
+本ソフトウェアは **[MIT License](LICENSE)** の下で公開されています。商用・非商用問わず自由にご利用、改変、再配布いただけます。
 
-`drone_cat_1.tscn` は、基本シーン `drone_1.tscn` を複製し **AI制御の猫** を追加したシーンです。猫が箱庭ドローンを追跡し、間合いに入ると跳躍/前足パンチで一撃を狙います。
-
-## 構成
-
-| 要素 | 場所 | 役割 |
-|---|---|---|
-| シーン | `Scenes/drone_cat_1.tscn` | ドローン箱庭＋AI猫（`drone_1.tscn` は無改変で温存） |
-| 猫本体 | `Cat/scenes/CatController.tscn`（`Cat/scripts/cat_controller.gd`） | 移動・アニメ・ジャンプ物理。入力/AIを知らない「意図API」だけを公開 |
-| AIブレイン | `Cat/scripts/cat_drone_hunter.gd`（`CatHunter` ノード） | ドローンを追跡→跳躍/パンチ。意図APIを駆動 |
-| モデル | `Cat/p3_koha9face.glb` ＋ テクスチャ | 猫の3Dモデル（毛シェル・アルファ） |
-| デモ飛行 | `Cat/scripts/drone_demo_pilot.gd`（`DroneDemoPilot`） | コンダクタ無しでドローンを自動飛行させる（実サーバ時は `enabled=false`） |
-| 単体テスト | `Cat/scenes/HuntTest.tscn` | 実ドローン/コンダクタ不要でAI挙動を確認 |
-
-## 動作
-
-- **STARTボタン連携**：シミュレータ開始（`HakoSimState.Running`）前は **お座り** で待機。STARTで **ゆっくり歩き出し**、その後は **近くは歩き / 遠くは走り** で追跡します。
-- **攻撃**：ドローン高度が低ければ地上パンチ、跳んで届く高さなら跳躍。接触すると `drone_hit` シグナルを発火します（ドローンを落とす「撃墜」連携は今後対応）。
-
-## レンダラ
-
-猫の毛/アルファ表現のため、プロジェクトのレンダラを **Forward+** に設定しています（`project.godot`）。※ Quest スタンドアロン等モバイル向けに動かす場合は Mobile レンダラが別途必要です。
-
-## 実行方法
-
-- **実シーン**：箱庭コンダクタを起動した上で `drone_cat_1.tscn` を Play。STARTボタンで猫が動き出します。
-- **AI単体確認（コンダクタ不要）**：`Cat/scenes/HuntTest.tscn` を「現在のシーンを実行(F6)」。ダミードローンを猫が追います。
-
-## 調整
-
-Inspector で調整できます。詳細は **[`Cat/cat_ai_tuning.md`](Cat/cat_ai_tuning.md)** を参照：
-
-- `CatHunter`：`run_distance`（走り出す距離）/ `jump_reach`（跳ぶ高度）/ `start_walk_time`（START直後の歩き出し秒）/ `wait_for_sim_start` など
-- `Cat`：`walk_speed` / `run_speed` / `walk_anim_speed`（すり足対策）など
-
-## レーダー可視化の無効化
-
-`DroneAvatar` の `[Export] enableRadarVisualizer` を `false` にすると、自動生成されるレーダー点群/FOVコーンの可視化を消せます（`drone_cat_1` では false 設定済み）。
-
-## 対応しているCollider
-
-未対応…
-
-## AR対応
-
-未対応…(OpenXRベースで対応予定)
-
+Copyright (c) 2026 Hakoniwa Community.

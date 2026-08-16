@@ -22,6 +22,14 @@ namespace hakoniwa.objects.core
         [Export] public Color TargetColor = new Color(0.06f, 0.06f, 0.06f);
         // surfaces brighter than this (perceived luminance) get repainted
         [Export] public float WhiteThreshold = 0.62f;
+        // Look of the repaint. Defaults keep the original matte-black behaviour;
+        // set Metallic high / Roughness low for a brushed-metal (silver) finish.
+        [Export] public float TargetMetallic = 0.1f;
+        [Export] public float TargetRoughness = 0.6f;
+        // Subtrees whose node name starts with this are left alone. Rotors and
+        // propellers are separate spinning parts and usually must keep their own
+        // colour (repainting them makes the spin unreadable).
+        [Export] public string SkipNamePrefix = "";
         [Export] public bool Verbose = false;
 
         private StandardMaterial3D blackMat;
@@ -29,17 +37,22 @@ namespace hakoniwa.objects.core
         public override void _Ready()
         {
             if (!Enabled) return;
-            blackMat = new StandardMaterial3D { AlbedoColor = TargetColor, Metallic = 0.1f, Roughness = 0.6f };
+            blackMat = new StandardMaterial3D {
+                AlbedoColor = TargetColor, Metallic = TargetMetallic, Roughness = TargetRoughness };
             Node root = GetParent() ?? this;
             int hidden = 0, painted = 0;
             Walk(root, ref hidden, ref painted);
-            GD.Print($"[OriginModelStyle] hidden={hidden} repainted={painted} -> {TargetColor.ToHtml(false)}");
+            GD.Print($"[OriginModelStyle] hidden={hidden} repainted={painted} -> {TargetColor.ToHtml(false)} "
+                     + $"(metallic={TargetMetallic:F2} roughness={TargetRoughness:F2}"
+                     + (string.IsNullOrEmpty(SkipNamePrefix) ? ")" : $", skip prefix '{SkipNamePrefix}')"));
         }
 
         private void Walk(Node node, ref int hidden, ref int painted)
         {
             if (node.Name == SkipNodeName) return;
-            if (node.Name == HideNodeName && node is Node3D n3)
+            if (!string.IsNullOrEmpty(SkipNamePrefix) &&
+                node.Name.ToString().StartsWith(SkipNamePrefix)) return;
+            if (!string.IsNullOrEmpty(HideNodeName) && node.Name == HideNodeName && node is Node3D n3)
             {
                 n3.Visible = false;
                 hidden++;

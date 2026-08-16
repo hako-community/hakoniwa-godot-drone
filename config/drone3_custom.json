@@ -6,7 +6,8 @@
     "  status(ch18) は DroneAvatar が無条件に read 宣言するので必須。プラントは書かないので 0 が読める。",
     "  battery(ch4) は useBattery が [Export] されておらず常に true なので必須。",
     "起動: HAKO_PDU_CONFIG=./config/drone3_custom.json で上書きもできる（HakoAsset.cs）。",
-    "★ lidar_points(ch16)/lidar_pos(ch17) は HAKO_EXTERNAL_SENSING=1 のときに使う（Pattern A）。"
+    "★ lidar_points(ch16)/lidar_pos(ch17) は HAKO_EXTERNAL_SENSING=1 のときに使う（Pattern A）。",
+    "★ 2026-08-16: drone3 にレーダは載らないので radar の ch は宣言しない。可視化は LiDAR 側（HAKO_VIZ_MODE=lidar）。"
   ],
   "robots": [
     {

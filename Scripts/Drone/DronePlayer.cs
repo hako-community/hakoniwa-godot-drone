@@ -198,7 +198,10 @@ namespace hakoniwa.drone
                 ret = DroneServiceRC.GetControls(0, out c1, out c2, out c3, out c4, out c5, out c6, out c7, out c8);
                 if (ret == 0)
                 {
-                    drone_propeller.Rotate((float)c1, (float)c2, (float)c3, (float)c4);
+                    // サービスは常に 8ch 返す。ロータ本数に応じて先頭から使われる
+                    drone_propeller.Rotate(new float[] {
+                        (float)c1, (float)c2, (float)c3, (float)c4,
+                        (float)c5, (float)c6, (float)c7, (float)c8 });
                 }
                 propellerRotation = (float)c1;
             }

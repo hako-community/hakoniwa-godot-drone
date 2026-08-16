@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropeller.cs" id="1_prop"]
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropellerDemoDriver.cs" id="2_drv"]
+
+[node name="Root" type="Node3D"]
+
+[node name="Propellers" type="Node3D" parent="." node_paths=PackedStringArray("propeller1", "propeller2", "propeller3", "propeller4")]
+script = ExtResource("1_prop")
+propeller1 = NodePath("p1")
+propeller2 = NodePath("p2")
+propeller3 = NodePath("p3")
+propeller4 = NodePath("p4")
+enableAudio = false
+maxRotationSpeed = 100.0
+
+[node name="p1" type="Node3D" parent="Propellers"]
+
+[node name="p2" type="Node3D" parent="Propellers"]
+
+[node name="p3" type="Node3D" parent="Propellers"]
+
+[node name="p4" type="Node3D" parent="Propellers"]
+
+[node name="Driver" type="Node3D" parent="."]
+script = ExtResource("2_drv")
+propellerPath = NodePath("../Propellers")
+control = 0.5
+cycleSeconds = 0.5

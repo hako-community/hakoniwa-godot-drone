@@ -387,8 +387,15 @@ namespace hakoniwa.drone.sim
                 if (pdu_propeller != null)
                 {
                     HakoHilActuatorControls propeller = new HakoHilActuatorControls(pdu_propeller);
-                    drone_propeller.Rotate((float)propeller.controls[0], (float)propeller.controls[1], (float)propeller.controls[2], (float)propeller.controls[3]);
-                    propellerRotation = (float)propeller.controls[0];
+                    // ロータ本数は機体（シーン）依存。4 発固定にしない
+                    int n = Math.Min(drone_propeller.RotorCount, propeller.controls.Length);
+                    float[] controls = new float[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        controls[i] = (float)propeller.controls[i];
+                    }
+                    drone_propeller.Rotate(controls);
+                    propellerRotation = (n > 0) ? controls[0] : 0;
                 }
             }
 

@@ -85,7 +85,7 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
         pdu_manager.WriteNamedPdu(npdu_pos);
         var ret = await pdu_manager.FlushNamedPdu(npdu_pos);
     }
-    private async void FlushPduPropeller(float c1, float c2, float c3, float c4)
+    private async void FlushPduPropeller(float[] controls)
     {
         var pdu_manager = ARBridge.Instance.Get();
         if (pdu_manager == null)
@@ -103,12 +103,12 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
         }
 
         HakoHilActuatorControls actuator = new HakoHilActuatorControls(npdu.Pdu);
-        float[] controls = new float[16];
-        controls[0] = c1;
-        controls[1] = c2;
-        controls[2] = c3;
-        controls[3] = c4;
-        actuator.controls = controls;
+        float[] pdu_controls = new float[16];
+        for (int i = 0; i < controls.Length && i < pdu_controls.Length; i++)
+        {
+            pdu_controls[i] = controls[i];
+        }
+        actuator.controls = pdu_controls;
 
         pdu_manager.WriteNamedPdu(npdu);
         var ret = await pdu_manager.FlushNamedPdu(npdu);
@@ -338,10 +338,14 @@ public partial class DronePlayerDevice : Node, IHakoniwaArObject, IDroneDisturba
         ret = DroneServiceRC.GetControls(0, out c1, out c2, out c3, out c4, out c5, out c6, out c7, out c8);
         if (ret == 0)
         {
-            drone_propeller.Rotate((float)c1, (float)c2, (float)c3, (float)c4);
+            // サービスは常に 8ch 返す。ロータ本数に応じて先頭から使われる
+            float[] controls = new float[] {
+                (float)c1, (float)c2, (float)c3, (float)c4,
+                (float)c5, (float)c6, (float)c7, (float)c8 };
+            drone_propeller.Rotate(controls);
             if (useWebServer)
             {
-                FlushPduPropeller((float)c1, (float)c2, (float)c3, (float)c4);
+                FlushPduPropeller(controls);
             }
         }
         

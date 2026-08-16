@@ -97,7 +97,7 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
         }
     }
 
-    private float[] prev_controls = new float[4];
+    private float[] prev_controls = null;
     private IPduManager pduManager;
 
     public override void _PhysicsProcess(double delta)
@@ -139,22 +139,24 @@ public partial class DroneAvatarWeb : Node3D, IHakoniwaWebObject, IDroneBatteryS
          * Propeller
          */
         float propellerRotation = 0;
-        IPdu pdu_propeller = pduManager.ReadPdu(robotName, pdu_name_propeller);
-        if (pdu_propeller == null)
+        if (prev_controls == null && drone_propeller != null)
         {
-            if (drone_propeller != null)
-                drone_propeller.Rotate(prev_controls[0], prev_controls[1], prev_controls[2], prev_controls[3]);
+            // ロータ本数は機体（シーン）依存。4 発固定にしない
+            prev_controls = new float[drone_propeller.RotorCount];
         }
-        else
+        IPdu pdu_propeller = pduManager.ReadPdu(robotName, pdu_name_propeller);
+        if (pdu_propeller != null && prev_controls != null)
         {
             HakoHilActuatorControls propeller = new HakoHilActuatorControls(pdu_propeller);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < prev_controls.Length && i < propeller.controls.Length; i++)
             {
                 prev_controls[i] = (float)propeller.controls[i];
             }
-            if (drone_propeller != null)
-                drone_propeller.Rotate(prev_controls[0], prev_controls[1], prev_controls[2], prev_controls[3]);
-            propellerRotation = prev_controls[0];
+            propellerRotation = prev_controls.Length > 0 ? prev_controls[0] : 0;
+        }
+        if (drone_propeller != null)
+        {
+            drone_propeller.Rotate(prev_controls);
         }
         /*
          * Battery

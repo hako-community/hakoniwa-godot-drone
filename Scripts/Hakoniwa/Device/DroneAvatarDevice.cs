@@ -31,7 +31,7 @@ public partial class DroneAvatarDevice : Node, IHakoniwaArObject
         GD.Print("max rotation : " + drone_propeller.maxRotationSpeed);
     }
     
-    private float[] prev_controls = new float[4];
+    private float[] prev_controls = null;
 
     public override void _PhysicsProcess(double delta)
     {
@@ -51,20 +51,21 @@ public partial class DroneAvatarDevice : Node, IHakoniwaArObject
         /*
          * Propeller
          */
-        IPdu pdu_propeller = pduManager.ReadPdu(robotName, pdu_name_propeller);
-        if (pdu_propeller == null)
+        if (prev_controls == null)
         {
-            drone_propeller.Rotate(prev_controls[0], prev_controls[1], prev_controls[2], prev_controls[3]);
+            // ロータ本数は機体（シーン）依存。4 発固定にしない
+            prev_controls = new float[drone_propeller.RotorCount];
         }
-        else
+        IPdu pdu_propeller = pduManager.ReadPdu(robotName, pdu_name_propeller);
+        if (pdu_propeller != null)
         {
             HakoHilActuatorControls propeller = new HakoHilActuatorControls(pdu_propeller);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < prev_controls.Length && i < propeller.controls.Length; i++)
             {
                 prev_controls[i] = propeller.controls[i];
             }
-            drone_propeller.Rotate((float)propeller.controls[0], (float)propeller.controls[1], (float)propeller.controls[2], (float)propeller.controls[3]);
         }
+        drone_propeller.Rotate(prev_controls);
     }
 
     private void UpdatePosition(Twist pos)

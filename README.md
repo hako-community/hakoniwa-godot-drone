@@ -87,6 +87,9 @@ hakoniwa-godot-drone/
 
 ## ライセンス
 
-本ソフトウェアは **[MIT License](LICENSE)** の下で公開されています。商用・非商用問わず自由にご利用、改変、再配布いただけます。
+本ソフトウェアは **[PolyForm Noncommercial License 1.0.0](LICENSE)** の下で公開されています。
+
+- **非商用目的（研究、教育、個人での評価・学習など）**: 自由にご利用、改変、再配布が可能です。
+- **商用利用（有償サービス、企業研修、商業プロダクトへの組み込み等）**: 商用ライセンスの取得が必要です。商用利用をご希望の際は、箱庭コミュニティ（Hakoniwa Community）までお問い合わせください。
 
 Copyright (c) 2026 Hakoniwa Community.

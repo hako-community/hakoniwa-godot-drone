@@ -52,6 +52,18 @@ namespace hakoniwa.environment.impl.hako
         {
             PduInformation pdu_info;
             var key = (robotName, pduName);
+            // ★ 未定義の PDU 名だと channelId / pduSize が -1 で降ってくる。
+            //   そのまま進むと (uint)(-1) = 4294967295 のチャネルを作りに行き、
+            //   共有メモリ要求が 4 GB になったうえで
+            //   "System.OverflowException: Arithmetic operation resulted in an overflow"
+            //   としか出ない（原因が pdu 名だと分からない）。ここで名指しで止める。
+            if (channelId < 0 || pduSize <= 0)
+            {
+                GD.PrintErr($"[HakoCommunicationService] unknown pdu: robotName='{robotName}' "
+                            + $"pduName='{pduName}' channelId={channelId} pduSize={pduSize} "
+                            + "-- この PDU 名は設定ファイル（custom.json 等）に無い");
+                return false;
+            }
             if (!writers.TryGetValue(key, out pdu_info))
             {
                 bool ret = HakoCppWrapper.asset_create_pdu_lchannel(robotName, channelId, (uint)pduSize);
@@ -70,6 +82,19 @@ namespace hakoniwa.environment.impl.hako
         {
             PduInformation pdu_info;
             var key = (robotName, pduName);
+            // ★ 未定義の PDU 名だと channelId / pduSize が -1 で降ってくる。
+            //   そのまま進むと (uint)(-1) = 4294967295 のチャネルを作りに行き、
+            //   共有メモリ要求が 4 GB になったうえで
+            //   "System.OverflowException: Arithmetic operation resulted in an overflow"
+            //   としか出ない（原因が pdu 名だと分からない）。ここで名指しで止める。
+            if (channelId < 0 || pduSize <= 0)
+            {
+                GD.PrintErr($"[HakoCommunicationService] unknown pdu: robotName='{robotName}' "
+                            + $"pduName='{pduName}' channelId={channelId} pduSize={pduSize} "
+                            + "-- この PDU 名は設定ファイル（custom.json 等）に無い");
+                return false;
+            }
+
             if (!readers.TryGetValue(key, out pdu_info))
             {
                 bool ret = HakoCppWrapper.asset_create_pdu_lchannel(robotName, channelId, (uint)pduSize);

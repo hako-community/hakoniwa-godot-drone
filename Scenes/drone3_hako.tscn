@@ -23,7 +23,6 @@
 [ext_resource type="PackedScene" path="res://Models/drone3/drone3.glb" id="4_model"]
 [ext_resource type="Script" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="5_lidar"]
 [ext_resource type="Script" path="res://Scripts/Components/Sensors/LiDAR/Default3DLiDARController.cs" id="6_lidar_dev"]
-[ext_resource type="Script" path="res://Scripts/Components/Sensors/SensorVizRig.cs" id="7_sensorviz"]
 [ext_resource type="Script" path="res://Scripts/Components/Drone/OriginModelStyle.cs" id="8_style"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_ground"]
@@ -133,12 +132,13 @@ script = ExtResource("5_lidar")
 [node name="sensor" type="Node3D" parent="Drone3/LiDAR"]
 script = ExtResource("6_lidar_dev")
 
-; ★ センサ可視化リグ。LiDAR/Radar の点群と覆域を描く。
-;   FOV・レンジは **HAKO_SENSOR_MANIFEST**（プラント側と同じマニフェスト）から読むので、
-;   **描いている覆域と実際に飛ばしているレイが必ず一致する**。
-;   DroneAvatar が IRadar3DController として見つけて初期化する（配線は不要）。
-[node name="SensorViz" type="Node3D" parent="Drone3"]
-script = ExtResource("7_sensorviz")
+; ★ SensorVizRig（覆域と点群の HUD）は **置かない**。
+;   drone3 にレーダは載らないが、DroneAvatar はシーン内の IRadar3DController を見つけると
+;   **無条件に radar_points を read 宣言する**。この機体の PDU 定義に ch19 は無いので、
+;   宣言が -1 で返り、(uint)(-1) = 4 GB のチャネルを作りに行って
+;   "OverflowException" で落ちる（原因が PDU 名だと分からない形で出る）。
+;   LiDAR の点群は DroneAvatar が自前で LiDARPointCloudVisualizer を生やすので、
+;   このリグが無くても描かれる。レーダを積む機体では戻すこと。
 
 [node name="HUD" type="CanvasLayer" parent="."]
 

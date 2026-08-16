@@ -32,7 +32,7 @@ ch 番号 → ロータノード → 回転方向 の対応は、シーンを開
 
 ```bash
 export DOTNET_ROOT=$HOME/.dotnet; export PATH=$HOME/.dotnet:$PATH
-GODOT=/usr/local/bin/Godot_v4.6.3-stable_mono_linux_x86_64/Godot_v4.6.3-stable_mono_linux.x86_64
+GODOT=$(ls -d /usr/local/bin/Godot_v*mono*/Godot_v*mono*.x86_64 | sort -V | tail -1)   # 4.7.1 以降
 
 $GODOT --headless --path . Scenes/drone3_viz.tscn -- --selftest              # 8 発（drone3）
 $GODOT --headless --path . Scenes/propeller_legacy_selftest.tscn -- --selftest  # 4 発（後方互換）

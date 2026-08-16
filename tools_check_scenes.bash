@@ -11,7 +11,11 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
 export PATH="${DOTNET_ROOT}:${PATH}"
 export LD_LIBRARY_PATH="$PWD/Plugins/Linux/x86_64:${LD_LIBRARY_PATH:-}"
-GODOT="${GODOT:-/usr/local/bin/Godot_v4.6.3-stable_mono_linux_x86_64/Godot_v4.6.3-stable_mono_linux.x86_64}"
+# ★ Godot の版は決め打ちにしない（2026-08-16 に 4.6.3 → 4.7.1 へ更新された）。
+#   /usr/local/bin にある mono ビルドのうち **いちばん新しいもの**を既定にする。
+if [[ -z "${GODOT:-}" ]]; then
+  GODOT=$(ls -d /usr/local/bin/Godot_v*mono*/Godot_v*mono*.x86_64 2>/dev/null | sort -V | tail -1)
+fi
 OUT="${OUT:-/tmp/scene_check}"
 mkdir -p "${OUT}"
 

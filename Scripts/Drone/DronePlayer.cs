@@ -161,6 +161,9 @@ namespace hakoniwa.drone
             }
         }
 
+        [Export]
+        public float visual_offset_y = 0.05f;
+
         public override void _PhysicsProcess(double delta)
         {
             // 現在位置を記録
@@ -178,7 +181,7 @@ namespace hakoniwa.drone
                 Godot.Vector3 unity_pos = new Godot.Vector3();
                 unity_pos.Z = (float)x;
                 unity_pos.X = -(float)y;
-                unity_pos.Y = (float)z;
+                unity_pos.Y = (float)z + visual_offset_y;
                 body.Position = unity_pos;
             }
             

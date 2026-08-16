@@ -70,12 +70,26 @@ namespace hakoniwa.drone
 
 		public override void _Ready()
 		{
-			// Connect signal
-// T.B.D.			BodyEntered += OnBodyEntered;
-
 			if (pos_obj == null)
 			{
 				pos_obj = this;
+			}
+
+			// parent RigidBody3D の BodyEntered シグナルを接続
+			var parent = GetParent() as RigidBody3D;
+			if (parent != null)
+			{
+				parent.ContactMonitor = true;
+				if (parent.MaxContactsReported < 4)
+				{
+					parent.MaxContactsReported = 4;
+				}
+				parent.BodyEntered += OnBodyEntered;
+				GD.Print($"[DroneCollision] Connected to parent RigidBody3D ({parent.Name}) BodyEntered signal.");
+			}
+			else
+			{
+				GD.PushWarning("[DroneCollision] Parent is not a RigidBody3D. Physical collision detection might not work.");
 			}
 			
 			// Find DroneControl if not assigned (naive search)
@@ -85,7 +99,33 @@ namespace hakoniwa.drone
 			}
 		}
 
-		private void OnBodyEntered(Node3D other)
+		// 猫パンチ等、距離ベースの命中判定から直接インパルスをトリガーするメソッド
+		public void TriggerCatHitImpulse(Vector3 punchDirection, double velocityMagnitude)
+		{
+			impluse_collision.collision = true;
+			impluse_collision.isTargetStatic = false;
+			impluse_collision.restitutionCoefficient = 0.15; // 反発係数を低く（ソフトな打撃）
+			
+			// Godot座標系での法線（猫からドローンへの方向）と速度
+			Vector3 godotNormal = punchDirection.Normalized();
+			Vector3 godotVelocity = punchDirection.Normalized() * (float)velocityMagnitude;
+			
+			// 箱庭シミュレータ（ROS座標系）用に座標変換
+			impluse_collision.normal = ConvertToRosVector(godotNormal);
+			impluse_collision.targetVelocity = ConvertToRosVector(godotVelocity);
+			
+			impluse_collision.targetContactVector = Vector3.Zero;
+			impluse_collision.selfContactVector = Vector3.Zero;
+			
+			impluse_collision.targetMass = 0.15; // 猫の前足の質量相当（約150g）にすることで衝撃を低減
+			impluse_collision.targetInertia = new Vector3(0.1f, 0.1f, 0.1f);
+			impluse_collision.targetEuler = Vector3.Zero;
+			impluse_collision.targetAngularVelocity = Vector3.Zero;
+			
+			GD.Print($"[DroneCollision] TriggerCatHitImpulse called: direction={punchDirection}, velocity={velocityMagnitude}, ROS normal={impluse_collision.normal}");
+		}
+
+		private void OnBodyEntered(Node otherNode)
 		{
 			if (vibration != null)
 			{
@@ -103,25 +143,33 @@ namespace hakoniwa.drone
 				}
 			}
 
-			// レイヤーマスクに基づいて対象をフィルタリング
-			// Godot's collision layer check
-			// other is a CollisionObject3D usually
-			if (other is CollisionObject3D colObj)
+			if (otherNode is CollisionObject3D colObj)
 			{
 				if (IsLayerInMask(colObj.CollisionLayer, collisionLayer))
 				{
-					// Assuming TargetColliderInfo has been ported or we comment it out for now.
-					// To make it compile, I'll comment out the heavy logic relying on Unity Physics
-					// and just print a message.
-					/*
-					TargetColliderInfo info = TargetColliderInfo.GetInfo(other);
-					if (info != null)
+					GD.Print($"[DroneCollision] Physical collision detected with: {colObj.Name}");
+					
+					impluse_collision.collision = true;
+					impluse_collision.isTargetStatic = colObj is StaticBody3D;
+					impluse_collision.restitutionCoefficient = 0.5;
+					
+					Vector3 relativeVelocity = Vector3.Zero;
+					if (colObj is RigidBody3D rigidBody)
 					{
-						GD.Print("Info: " + this.pos_obj.Name + " collided with " + info.GetName());
-						HandleTriggerImpulseCollision(info, other);
+						relativeVelocity = rigidBody.LinearVelocity;
 					}
-					*/
-					GD.Print($"Collided with {other.Name}. Physics logic temporarily disabled in port.");
+					
+					// 衝突した法線方向（相手からドローンへの方向）
+					Vector3 direction = (this.GlobalPosition - colObj.GlobalPosition).Normalized();
+					impluse_collision.normal = ConvertToRosVector(direction);
+					impluse_collision.targetVelocity = ConvertToRosVector(relativeVelocity);
+					impluse_collision.targetContactVector = Vector3.Zero;
+					impluse_collision.selfContactVector = Vector3.Zero;
+					
+					impluse_collision.targetMass = 1.0;
+					impluse_collision.targetInertia = new Vector3(0.1f, 0.1f, 0.1f);
+					impluse_collision.targetEuler = Vector3.Zero;
+					impluse_collision.targetAngularVelocity = Vector3.Zero;
 
 					if (vibrationObject != null)
 					{
@@ -142,28 +190,25 @@ namespace hakoniwa.drone
 			}
 		}
 
-		// Godot Vector3 to ROS (Right Handed? check logic)
-		// Unity (LHS) to ROS (RHS) conversion was:
-		// x -> z, y -> -x, z -> y
-		// Godot is RHS (Y-Up). ROS is RHS (Z-Up).
-		// If we want Godot -> ROS:
-		// Godot X (Right) -> ROS Y (Left)? No.
-		// Let's stick to the logic provided: z, -x, y
-		private Godot.Vector3 ConvertToRosVector(Godot.Vector3 unityVector)
+		// Godot Vector3 to ROS
+		// Godot: X=right, Y=up, Z=back
+		// ROS: X=forward (-Z), Y=left (-X), Z=up (Y)
+		private Godot.Vector3 ConvertToRosVector(Godot.Vector3 godotVector)
 		{
 			return new Godot.Vector3(
-				unityVector.Z,
-				-unityVector.X,
-				unityVector.Y
+				-godotVector.Z,
+				-godotVector.X,
+				godotVector.Y
 			);
 		}
 
-		private Godot.Vector3 ConvertToRosAngular(Godot.Vector3 unityAngular)
+		private Godot.Vector3 ConvertToRosAngular(Godot.Vector3 godotAngular)
 		{
+			// X (Roll) -> -Z, Y (Pitch) -> X, Z (Yaw) -> -Y
 			return new Godot.Vector3(
-				-unityAngular.Z,
-				unityAngular.X,
-				-unityAngular.Y
+				-godotAngular.Z,
+				godotAngular.X,
+				-godotAngular.Y
 			);
 		}
 

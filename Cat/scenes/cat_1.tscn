@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://dl3bqut0dphgr"]
+
+[ext_resource type="PackedScene" uid="uid://b5catctrl001" path="res://Cat/scenes/CatController.tscn" id="1_n45h0"]
+[ext_resource type="Texture2D" uid="uid://bktlwwmk25e2d" path="res://Materials/Textures/godot_texture2.png" id="2_p22b5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ywsav"]
+albedo_color = Color(0.64048463, 0.64048463, 0.64048463, 1)
+albedo_texture = ExtResource("2_p22b5")
+uv1_scale = Vector3(3, 2, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_c5alh"]
+material = SubResource("StandardMaterial3D_ywsav")
+size = Vector3(50, 0.1, 50)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kb54v"]
+size = Vector3(50, 0.1, 50)
+
+[node name="cat_root" type="Node3D" unique_id=1859363824]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=253737354]
+transform = Transform3D(1, 0, 0, 0, -0.67292875, 0.7397073, 0, -0.7397073, -0.67292875, 0, 0.49853802, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1653783325]
+transform = Transform3D(-1, 0, -8.742277e-08, -2.434192e-08, 0.96045387, 0.2784391, 8.3965546e-08, 0.2784391, -0.96045387, 0, 0.24775255, -0.48770243)
+
+[node name="CatController" parent="." unique_id=1999582437 instance=ExtResource("1_n45h0")]
+
+[node name="Floor" type="StaticBody3D" parent="." unique_id=1846839352]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.060149178, -9.7048855)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=1390290817]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8474503, -0.10000001, -1.2446606e-07)
+mesh = SubResource("BoxMesh_c5alh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1089670215]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_kb54v")
+debug_color = Color(0.85617214, 0.00075526774, 0.88560927, 0.41960785)

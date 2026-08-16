@@ -77,6 +77,8 @@ namespace hakoniwa.drone.sim
         private IPduManager cachedPduManager = null;
         private int last_internal_state = -1;
         private float last_propeller_rotation = -1f;
+        private float current_propeller_rotation = -1f;
+        private int current_internal_state = -1;
         private double debug_timer = 0;
         public void EventInitialize()
         {
@@ -388,6 +390,7 @@ namespace hakoniwa.drone.sim
                 {
                     HakoHilActuatorControls propeller = new HakoHilActuatorControls(pdu_propeller);
                     // ロータ本数は機体（シーン）依存。4 発固定にしない
+                    // （8 発機 drone3 のように 4 発でない機体がある）。
                     int n = Math.Min(drone_propeller.RotorCount, propeller.controls.Length);
                     float[] controls = new float[n];
                     for (int i = 0; i < n; i++)
@@ -396,6 +399,7 @@ namespace hakoniwa.drone.sim
                     }
                     drone_propeller.Rotate(controls);
                     propellerRotation = (n > 0) ? controls[0] : 0;
+                    current_propeller_rotation = propellerRotation;
                 }
             }
 
@@ -476,6 +480,7 @@ namespace hakoniwa.drone.sim
             if (pdu_status != null)
             {
                 DroneStatus drone_status = new DroneStatus(pdu_status);
+                current_internal_state = drone_status.internal_state;
                 if (drone_status.internal_state != last_internal_state || Math.Abs(propellerRotation - last_propeller_rotation) > 0.1f)
                 {
 //                     GD.Print($"[DroneAvatar Log] Propeller:{propellerRotation:F2} State:{drone_status.internal_state}");
@@ -518,32 +523,58 @@ namespace hakoniwa.drone.sim
         }
 
         [Export]
-        public bool enableLerp = false;
+        public bool enableLerp = true;
+        [Export]
+        public float lerpSpeed = 25.0f;
+
+        private Godot.Vector3 target_unity_pos = Godot.Vector3.Zero;
+        private Godot.Quaternion target_unity_rot = Godot.Quaternion.Identity;
+        private bool has_target_pos = false;
+        private Godot.Vector3 initialScale = Godot.Vector3.One;
+
+        public override void _Ready()
+        {
+            if (this.Scale != Godot.Vector3.Zero)
+            {
+                initialScale = this.Scale;
+            }
+        }
+
         private void UpdatePosition(Twist pos)
         {
             // 1. 位置は元の通り (Godotの-Z前方に合わせる)
-            Godot.Vector3 unity_pos = new Godot.Vector3(-(float)pos.linear.y, (float)pos.linear.z, -(float)pos.linear.x);
+            target_unity_pos = new Godot.Vector3(-(float)pos.linear.y, (float)pos.linear.z, -(float)pos.linear.x);
 
             // 2. 回転の各軸を個別に作成 (Unityの符号反転論理を適用)
-            // Pitch (angular.y) を反転させて「正 = 機首下げ」にする
-            // Yaw (angular.z) と Roll (angular.x) もUnityの Euler(-yaw, -roll) に合わせる
             var qRoll  = Godot.Quaternion.FromEuler(new Godot.Vector3(0, 0, -(float)pos.angular.x));
             var qPitch = Godot.Quaternion.FromEuler(new Godot.Vector3(-(float)pos.angular.y, 0, 0)); 
             var qYaw   = Godot.Quaternion.FromEuler(new Godot.Vector3(0, (float)pos.angular.z, 0));
 
             // 3. Unityと同じ ZXY 順序 (Roll -> Pitch -> Yaw) で合成
-            Godot.Quaternion targetRotation = qYaw * qPitch * qRoll;
+            target_unity_rot = qYaw * qPitch * qRoll;
 
-            if (enableLerp)
+            if (!has_target_pos)
             {
-                float step = 8.0f * (float)GetProcessDeltaTime();
-                this.GlobalPosition = this.GlobalPosition.Lerp(unity_pos, step);
-                this.GlobalBasis = new Basis(new Godot.Quaternion(this.GlobalBasis).Slerp(targetRotation, step));
+                this.GlobalPosition = target_unity_pos;
+                this.GlobalBasis = new Basis(target_unity_rot).Scaled(initialScale);
+                has_target_pos = true;
             }
-            else
+            else if (!enableLerp)
             {
-                this.GlobalPosition = unity_pos;
-                this.GlobalBasis = new Basis(targetRotation);
+                this.GlobalPosition = target_unity_pos;
+                this.GlobalBasis = new Basis(target_unity_rot).Scaled(initialScale);
+            }
+        }
+
+        public override void _Process(double delta)
+        {
+            if (has_target_pos && enableLerp)
+            {
+                float step = Mathf.Clamp((float)delta * lerpSpeed, 0f, 1f);
+                this.GlobalPosition = this.GlobalPosition.Lerp(target_unity_pos, step);
+                var currentRot = this.GlobalBasis.GetRotationQuaternion();
+                var slerpedRot = currentRot.Slerp(target_unity_rot, step);
+                this.GlobalBasis = new Basis(slerpedRot).Scaled(initialScale);
             }
         }
 
@@ -567,5 +598,17 @@ namespace hakoniwa.drone.sim
                     sea_level_atm,
                     sea_level_temperature));
         }
+
+        public bool IsArmed()
+        {
+            // デモモードや未初期化状態（PDUデータがまだ来ていない）
+            if (current_propeller_rotation < 0f) {
+                return true;
+            }
+            return current_propeller_rotation > 0.01f;
+        }
+
+        public float GetPropellerRotation() => current_propeller_rotation;
+        public int GetInternalState() => current_internal_state;
     }
 }

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cj6wvyyt5f4va"
-path="res://.godot/imported/propeller_origin_01.glb-a569a625658b2b76699249592c78fd98.scn"
+uid="uid://3ows740plieg"
+path="res://.godot/imported/origin_01_body.glb-5cdb857075546c6f183874b76705fc5b.scn"
 
 [deps]
 
-source_file="res://Models/origin-01/propeller_origin_01.glb"
-dest_files=["res://.godot/imported/propeller_origin_01.glb-a569a625658b2b76699249592c78fd98.scn"]
+source_file="res://Models/origin-01/origin_01_body.glb"
+dest_files=["res://.godot/imported/origin_01_body.glb-5cdb857075546c6f183874b76705fc5b.scn"]
 
 [params]
 
@@ -42,4 +42,4 @@ materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
-gltf/texture_map_mode=0
+gltf/texture_map_mode=1

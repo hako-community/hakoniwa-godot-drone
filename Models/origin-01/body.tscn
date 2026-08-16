@@ -1,9 +1,11 @@
-[gd_scene format=3 uid="uid://2ohw12lmqf7g"]
+[gd_scene load_steps=3 format=3 uid="uid://2ohw12lmqf7g"]
 
-[ext_resource type="PackedScene" uid="uid://dl5wb4llrdfhp" path="res://Models/origin-01/origin-01.glb" id="1_ur21b"]
+[ext_resource type="PackedScene" uid="uid://3ows740plieg" path="res://Models/origin-01/origin_01_body.glb" id="1_body"]
+[ext_resource type="PackedScene" uid="uid://bm8w1s0vtyc8h" path="res://Models/origin-01/origin_01_transporter.glb" id="2_transporter"]
 
-[node name="DroneTransporter3" instance=ExtResource("1_ur21b")]
+[node name="DroneTransporter3" type="Node3D"]
+
+[node name="Body" parent="." instance=ExtResource("1_body")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
 
-[node name="Dynamics" parent="DroneTransporter/DroneTransporter2/Root" index="0"]
-visible = false
+[node name="Transporter" parent="." instance=ExtResource("2_transporter")]

@@ -1,0 +1,111 @@
+[gd_scene load_steps=8 format=3]
+
+; ★★★★ VTOL クアッドプレーン（段階 0/1 の実験機）を **箱庭 PDU で駆動する**可視化シーン。
+;
+;   プラント : hakoniwa-mujoco-drone の `swarm_app`（--hakoniwa で pos/motor を配信する）
+;   このシーン: Drone_0/pos(ch1) と Drone_0/motor(ch0) を読んで機体を動かし、プロペラを回す
+;
+; ★ 機体は image2sim-framework のパラメトリック生成物
+;   （`config/vtol_quadplane_model.yaml` → `.blend` → GLB／MJCF）。
+;   **同じ .blend から、飛ばす MJCF と見せる GLB の両方が出ている。**
+;
+; ★ 起動順は決め打ち: プラント → このシーン → hako-cmd start。
+;   箱庭は state==Stopped のときしかアセットを登録できない。
+;
+; ★ .tscn を手書きするときの落とし穴（[[godot-drone-linux-run]]）:
+;   * Transform3D(...) の 12 数は **列ごと**（行で書くと転置した姿勢が入る）
+;   * node_paths=PackedStringArray(...) に書けるのは **Node 型の export だけ**
+;   * Camera3D.fov は既定で **垂直**画角
+;   * ★ このリポジトリの機首は **-Z**（右 = -X / 上 = +Y）。glb もそう出ているので回さない。
+;   * ★ SensorVizRig は置かない —— DroneAvatar が radar_points を無条件に read 宣言し、
+;     この機体の PDU 定義に ch19 が無いと 4 GB のチャネルを作りに行って落ちる。
+
+[ext_resource type="Script" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_hako"]
+[ext_resource type="Script" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_avatar"]
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropeller.cs" id="3_prop"]
+[ext_resource type="PackedScene" path="res://Models/vtol_quadplane/vtol_quadplane.glb" id="4_model"]
+[ext_resource type="Script" path="res://Scripts/CameraGimbal.cs" id="5_gimbal"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_color = Color(0.32, 0.34, 0.36, 1)
+
+[sub_resource type="PlaneMesh" id="Mesh_ground"]
+material = SubResource("Mat_ground")
+size = Vector2(4000, 4000)
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("Sky_mat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+tonemap_mode = 2
+ambient_light_source = 3
+ambient_light_energy = 0.55
+
+[node name="VtolQuadplaneHako" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.768221, -0.504536, 0.394055, 0, 0.615534, 0.78811, -0.640184, -0.605443, 0.472866, 0, 12, 0)
+shadow_enabled = true
+light_energy = 1.1
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_ground")
+
+; ★★★ **追従カメラ**。固定カメラでは巡航に入った瞬間に機体が豆粒になる（実際にそうなった）。
+;   `CameraGimbal` は機体の位置に Offset を足した所に付き、機首方向を向く。
+;   ★ このリポジトリの機首は **-Z** なので、**後ろ = +Z**。上から少し見下ろす。
+;   ★ Camera3D.fov は既定で **垂直**画角（[[godot-drone-linux-run]]）。
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("DroneNode")]
+script = ExtResource("5_gimbal")
+DroneNode = NodePath("../Vtol")
+Offset = Vector3(0, 3.5, 11)
+CameraRotate = 9.0
+fov = 45.0
+
+[node name="Hakoniwa" type="Node3D" parent="." node_paths=PackedStringArray("hakoObjects")]
+script = ExtResource("1_hako")
+customJsonFilePath = "./config/vtol_quadplane_custom.json"
+hakoObjects = [NodePath("../Vtol")]
+
+; DroneAvatar は body(Node3D) と rd(RigidBody3D) が未設定だと EventInitialize で例外を投げる。
+; 物理は MuJoCo 側が解くので、RigidBody3D は置くだけ（DroneAvatar が Freeze にする）。
+[node name="Vtol" type="Node3D" parent="." node_paths=PackedStringArray("body", "rd")]
+script = ExtResource("2_avatar")
+robotName = "Drone_0"
+body = NodePath("model")
+rd = NodePath("RigidBody3D")
+useTouchSensor = false
+
+[node name="RigidBody3D" type="RigidBody3D" parent="Vtol"]
+
+; y=0.485 … .blend 原点は接地面より 0.485 m 上（vtol_quadplane_meta.json の spawn_z_m）
+[node name="model" parent="Vtol" instance=ExtResource("4_model")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.485, 0)
+
+; ch 番号と glb のノード名の対応は vtol_quadplane_meta.json の rotors[].blend_name に合わせてある。
+;   ch0 = lift_fl(ccw) / ch1 = lift_fr(cw) / ch2 = lift_rl(cw) / ch3 = lift_rr(ccw) / ch4 = pusher
+; ★ プッシャ（ch4）は **推力軸が機首向き**なので、glb の中でも既に倒してある。
+;   回転の見え方も倒れた面で回る（ここでは向きを触らない）。
+[node name="Propellers" type="Node3D" parent="Vtol"]
+script = ExtResource("3_prop")
+propellerNodeNames = PackedStringArray("rotor_lift_fl_spin", "rotor_lift_fr_spin", "rotor_lift_rl_spin", "rotor_lift_rr_spin", "rotor_pusher_spin")
+propellerSearchRoot = NodePath("../model")
+spinDirections = PackedInt32Array(1, -1, -1, 1, 1)
+enableAudio = false
+maxRotationSpeed = 250.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 1000.0
+offset_bottom = 40.0
+text = "VTOL quadplane (hakoniwa PDU) - 4 lift rotors + 1 pusher + wing/tail"

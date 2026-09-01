@@ -1,0 +1,54 @@
+{
+  "_comment": [
+    "★★★★ VTOL クアッドプレーン（段階 0/1）の可視化用 PDU 定義。drone3 の定義を土台にしている。",
+    "★ ロボット名は **Drone_0**（プラント側 `swarm_app --hako-prefix Drone` が付ける名前に合わせる）。",
+    "★ ここに書く ch は **Godot が実際に触る物だけ**にする（未実装 ch を宣言すると落ちる）。",
+    "★ この機体にセンサ（LiDAR/レーダ）の可視化は付けていないので、点群の ch は宣言しない。"
+  ],
+  "robots": [
+    {
+      "name": "Drone_0",
+      "rpc_pdu_readers": [],
+      "rpc_pdu_writers": [],
+      "shm_pdu_readers": [
+        {
+          "type": "hako_mavlink_msgs/HakoHilActuatorControls",
+          "org_name": "motor",
+          "name": "Drone_0_motor",
+          "channel_id": 0,
+          "pdu_size": 112,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "geometry_msgs/Twist",
+          "org_name": "pos",
+          "name": "Drone_0_pos",
+          "channel_id": 1,
+          "pdu_size": 72,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "hako_msgs/HakoBatteryStatus",
+          "org_name": "battery",
+          "name": "Drone_0_battery",
+          "channel_id": 4,
+          "pdu_size": 56,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "hako_msgs/DroneStatus",
+          "org_name": "status",
+          "name": "Drone_0_status",
+          "channel_id": 18,
+          "pdu_size": 64,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        }
+      ],
+      "shm_pdu_writers": []
+    }
+  ]
+}

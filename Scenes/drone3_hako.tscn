@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 ; drone3（大型の 8 発機）を **箱庭 PDU で駆動する**可視化シーン（M2）。
 ;
@@ -24,13 +24,38 @@
 [ext_resource type="Script" path="res://Scripts/Hakoniwa/HakoSim/Drone/LiDAR3DController.cs" id="5_lidar"]
 [ext_resource type="Script" path="res://Scripts/Components/Sensors/LiDAR/Default3DLiDARController.cs" id="6_lidar_dev"]
 [ext_resource type="Script" path="res://Scripts/Components/Drone/OriginModelStyle.cs" id="8_style"]
+[ext_resource type="Script" path="res://Scripts/Components/Drone/ChaseCamera.cs" id="9_chase"]
 
-[sub_resource type="StandardMaterial3D" id="Mat_ground"]
-albedo_color = Color(0.32, 0.34, 0.36, 1)
+; ★★★ 2026-09-04（R-2b）: 地面を 20 km 四方にし、10 m 方眼を描くようにした。
+;   200 m 四方のままだと **巡航すると地面が尽きて宙に浮いて見え**、方眼が無いと
+;   「速く飛んでいるのか止まっているのか」が絵で分からない（＝ 動画にならない）。
+[sub_resource type="Shader" id="Shader_ground"]
+code = "shader_type spatial;
+
+uniform vec3 base_color : source_color = vec3(0.32, 0.34, 0.36);
+uniform vec3 line_color : source_color = vec3(0.46, 0.49, 0.52);
+uniform float grid_m = 10.0;
+uniform float line_w = 0.02;
+
+void fragment() {
+	// フラグメントの VERTEX はビュー座標なので、世界座標へ戻してから方眼にする
+	vec3 wp = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vec2 g = abs(fract(wp.xz / grid_m) - 0.5);
+	float d = max(g.x, g.y);
+	// 遠くほど線を太らせる（そうしないと遠景で方眼が消える）
+	float w = line_w + fwidth(d) * 1.5;
+	float line = smoothstep(0.5 - w, 0.5, d);
+	ALBEDO = mix(base_color, line_color, line);
+	ROUGHNESS = 0.9;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="Mat_ground"]
+shader = SubResource("Shader_ground")
 
 [sub_resource type="PlaneMesh" id="Mesh_ground"]
 material = SubResource("Mat_ground")
-size = Vector2(200, 200)
+size = Vector2(20000, 20000)
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 
@@ -57,14 +82,24 @@ light_energy = 1.1
 [node name="Ground" type="MeshInstance3D" parent="."]
 mesh = SubResource("Mesh_ground")
 
-; 機体を斜め後ろから見るカメラ（機首 = +Z）。
+; 機体を斜め後ろから見るカメラ（★ 機首は -Z なので、+Z 側が「後ろ」）。
 ; ★ Transform3D の 12 数は **列ごと**: (x.x, y.x, z.x, x.y, y.y, z.y, x.z, y.z, z.z, ox, oy, oz)。
 ;   位置 (7, 6.5, 8.5) から (0, 4.5, 0) を見る姿勢を手で組んである。
 ;   ★ 高度 3 m（FC なしのトリム浮上）でも 8 m（PX4 でホバリング）でも
 ;     機体が画面に入るように、その中間を見ている。
-[node name="Camera3D" type="Camera3D" parent="."]
+; ★★★★ 2026-09-04（R-2b）: 機体を追いかけるようにした。
+;   それまでは原点固定で、**巡航して 350 m 離れると画角の外**に出ていた（巡航の絵が撮れなかった）。
+;   ★ 追うのは **Drone3**（DroneAvatar は自分自身の GlobalPosition を動かす。model ではない）。
+;   ★ Enabled = false にすれば従来どおりの固定カメラに戻る。
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("Target")]
 transform = Transform3D(0.7719, -0.1136, 0.6255, 0, 0.9839, 0.1787, -0.6357, -0.1379, 0.7596, 7.0, 6.5, 8.5)
 fov = 50.0
+script = ExtResource("9_chase")
+Target = NodePath("../Drone3")
+Offset = Vector3(7, 6.5, 8.5)
+FollowYaw = false
+Smooth = 6.0
+Enabled = true
 
 [node name="Hakoniwa" type="Node3D" parent="." node_paths=PackedStringArray("hakoObjects")]
 script = ExtResource("1_hako")

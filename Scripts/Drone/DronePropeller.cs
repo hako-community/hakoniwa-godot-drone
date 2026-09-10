@@ -293,5 +293,16 @@ namespace hakoniwa.drone
 		{
 			Rotate(new float[] { c1, c2, c3, c4 });
 		}
+
+		/// <summary>
+		/// いま各ロータに与えられている指令値（読み取り専用のコピー）。
+		/// ★ リフト＆クルーズの見どころは「揚力ロータが 0 のまま、プッシャだけ回る」ところなので、
+		///   HUD／スクリーンショットに数字として出せるように公開する。回転そのものには使わない。
+		/// </summary>
+		public float[] GetCurrentControls()
+		{
+			EnsureRotors();
+			return (float[])current.Clone();
+		}
 	}
 }

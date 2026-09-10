@@ -1,19 +1,26 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 ; ★★★★ DeltaQuad（リフト＆クルーズ・V8）を **箱庭 PDU で駆動する**可視化シーン。
 ;
 ;   プラント : hakoniwa-mujoco-drone の `swarm_app`（--hakoniwa で pos/motor を配信する）
 ;   このシーン: Drone_0/pos(ch1) と Drone_0/motor(ch0) を読んで機体を動かし、プロペラを回す
 ;
-; ★★★★ **未解決（2026-09-09 ユーザ指摘）: マテリアルが当たっていない。**
-;   GLB は image2sim の現物（`output/deltaquad/deltaquad.glb` をそのままコピー。
-;   エレボン 0.700 x 0.095 m ／ スキッド有り ／ スパン 2.350 m ＝ **飛ばしている MJCF と同じ版**）だが、
-;   Godot の描画は**明るい灰色＋白い箱**になる。GLB のマテリアルは
-;   「機体ダークグレー(0.05)」「カーボンパイプ(0.02)」「プロペラ(0.03)」「LED シアン/レッド発光」で、
-;   image2sim の正面図（`output/deltaquad/renders/front.png`）は**ほぼ黒**である。
-;   → **形は合っているが色が当たっていない**ので「別の機体が飛んでいる」ように見える。
-;   ★ 次にやること: import 設定は vtol_quadplane と同一なので、
-;     ①`.scn` にマテリアルが入っているか ②`DroneAvatar` などが上書きしていないか を見る。
+; ✅★★★★ **決着（2026-09-10）: マテリアルは当たっていた。白かったのは「当たり判定の箱」である。**
+;   GLB には **`collision_*` の 5 個**（`collision_body` ／ `collision_frame_boom_left/right` ／
+;   `collision_landing_skid_left/right`）が入っていて、**この 5 個だけマテリアルが無い**。
+;   Godot はマテリアルの無い面を**真っ白**で描くので、これが「白い箱」の正体だった。
+;   ★★★★ さらに **`collision_body` は `body_core` と寸法が 1 mm も違わず、35 mm 上にあるだけ**、
+;   **`collision_landing_skid_*` は `landing_skid_*` と位置も寸法も完全に一致**する ——
+;   つまり**見えている面のほとんどが、白い当たり判定の箱だった**。
+;   → `deltaquad.glb.import` の `_subresources` で **この 5 個だけ import から外した**
+;     （`import/skip_import`）。GLB そのものは 1 バイトも触っていない。
+;   ★ 上流（image2sim）では **可視化用 GLB に collision_* を出さない**か、
+;     Godot の `-noimp` 接尾辞を付けるのが本筋。→ 申し送り事項。
+;
+; ★★★ 残る「明るい灰色」は**マテリアルではなく背景**だった。機体の albedo は 0.045（ほぼ黒）で
+;   正しく当たっているが、**地面が 0.32 と明るく、機体とほぼ同じ濃さ**だったので輪郭が消えていた
+;   （実測: 機体 0.36 ／ 地面 0.46）。→ 地面を 0.16 に落とし、トーンマップを ACES・露出 0.85 にした。
+;   ★ 機体そのものは**触っていない**（image2sim の設計どおりの色である）。
 ;
 ; ★ 機体は image2sim-framework の生成物（`config/deltaquad_model.yaml` → `.blend` → GLB／MJCF）。
 ;   **同じ .blend から、飛ばす MJCF と見せる GLB の両方が出ている。**
@@ -38,6 +45,7 @@
 [ext_resource type="Script" path="res://Scripts/Drone/DronePropeller.cs" id="3_prop"]
 [ext_resource type="PackedScene" path="res://Models/deltaquad/deltaquad.glb" id="4_model"]
 [ext_resource type="Script" path="res://Scripts/CameraGimbal.cs" id="5_gimbal"]
+[ext_resource type="Script" path="res://Scripts/Drone/FlightShotRecorder.cs" id="6_shot"]
 
 ; ★★★ 地面は 20 km 四方 ＋ 10 m 方眼（drone3_hako と同じ）。
 ;   ★★★★ **方眼が無いと「速く飛んでいるのか止まっているのか」が絵で分からない**
@@ -45,8 +53,8 @@
 [sub_resource type="Shader" id="Shader_ground"]
 code = "shader_type spatial;
 
-uniform vec3 base_color : source_color = vec3(0.32, 0.34, 0.36);
-uniform vec3 line_color : source_color = vec3(0.46, 0.49, 0.52);
+uniform vec3 base_color : source_color = vec3(0.16, 0.18, 0.17);
+uniform vec3 line_color : source_color = vec3(0.30, 0.33, 0.31);
 uniform float grid_m = 10.0;
 uniform float line_w = 0.02;
 
@@ -76,7 +84,8 @@ sky_material = SubResource("Sky_mat")
 [sub_resource type="Environment" id="Env"]
 background_mode = 2
 sky = SubResource("Sky")
-tonemap_mode = 2
+tonemap_mode = 3
+tonemap_exposure = 0.85
 ambient_light_source = 3
 ambient_light_energy = 0.55
 
@@ -145,9 +154,21 @@ maxRotationSpeed = 250.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
+; ★★★★ この行は **FlightShotRecorder が毎フレーム書き換える**（5 本の指令値と経過時間）。
+;   ★ 絵だけでは「揚力ロータが本当に 0 なのか、ゆっくり回っているのか」が分からない。
 [node name="Status" type="Label" parent="HUD"]
 offset_left = 16.0
 offset_top = 12.0
 offset_right = 1200.0
 offset_bottom = 40.0
-text = "DeltaQuad lift+cruise (hakoniwa PDU) - 4 lift rotors stop in cruise, wing + pusher only"
+text = "DeltaQuad lift+cruise (hakoniwa PDU) - waiting for the plant..."
+
+; ★★★ スクリーンショットは **手で撮らない**（手打ちの記録は翌日には言い伝えになる）。
+;   ★ 既定 Off —— `HAKO_SHOT_DIR` を渡したときだけ PNG を書く。飛行には 1 ビットも影響しない。
+; ★ export が **NodePath 型**なので node_paths= には書かない
+;   （node_paths に書けるのは Node 型の export だけ。書くと黙って空のまま入らない）。
+[node name="ShotRecorder" type="Node" parent="."]
+script = ExtResource("6_shot")
+propellersPath = NodePath("../Deltaquad/Propellers")
+statusLabelPath = NodePath("../HUD/Status")
+liftRotorCount = 4

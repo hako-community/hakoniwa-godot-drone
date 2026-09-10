@@ -26,8 +26,11 @@
 [ext_resource type="PackedScene" path="res://Models/vtol_quadplane/vtol_quadplane.glb" id="4_model"]
 [ext_resource type="Script" path="res://Scripts/CameraGimbal.cs" id="5_gimbal"]
 
+; ★★★★ 2026-09-10（ユーザ指示）: 地面を**薄いグレー**に上げた（deltaquad_hako と同じ明るさ）。
+;   ★ `albedo_color` は **sRGB 表示**なので、deltaquad 側のシェーダのリニア 0.55 は
+;     ここでは 0.77 と書く（同じ明るさ）。[[godot-drone-linux-run]]
 [sub_resource type="StandardMaterial3D" id="Mat_ground"]
-albedo_color = Color(0.32, 0.34, 0.36, 1)
+albedo_color = Color(0.76, 0.77, 0.78, 1)
 
 [sub_resource type="PlaneMesh" id="Mesh_ground"]
 material = SubResource("Mat_ground")
@@ -38,12 +41,20 @@ size = Vector2(4000, 4000)
 [sub_resource type="Sky" id="Sky"]
 sky_material = SubResource("Sky_mat")
 
+; ★★★★ 2026-09-10（ユーザ指示）: **機体が黒でなくグレーに見える**のは空の映り込みである
+;   （機体の albedo は 0.045 だが、金属度 0.15 の面が明るい空を映して灰色に浮く）。
+;   `reflected_light_source = 1`（Disabled）で止めると黒に落ちる。
+;   ★ `ambient_light_source` は Sky(3) のままだと `ambient_light_energy` が効かないので Color(2) にする。
+;   ★ 機体（GLB）は触っていない。直したのは環境の側だけである。
 [sub_resource type="Environment" id="Env"]
 background_mode = 2
 sky = SubResource("Sky")
-tonemap_mode = 2
-ambient_light_source = 3
-ambient_light_energy = 0.55
+tonemap_mode = 3
+tonemap_exposure = 0.85
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.87, 0.9, 1)
+ambient_light_energy = 0.6
+reflected_light_source = 1
 
 [node name="VtolQuadplaneHako" type="Node3D"]
 

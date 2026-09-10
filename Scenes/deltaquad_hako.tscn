@@ -50,11 +50,17 @@
 ; ★★★ 地面は 20 km 四方 ＋ 10 m 方眼（drone3_hako と同じ）。
 ;   ★★★★ **方眼が無いと「速く飛んでいるのか止まっているのか」が絵で分からない**
 ;   —— 追従カメラで撮ると背景が一様な灰色になり、静止画にも動画にもならない（実際にそうなった）。
+; ★★★★ 2026-09-10（ユーザ指示）: **暗い地面に明るい方眼だと白が目立って目がチカチカする**ので、
+;   **地の色を薄いグレーに上げた**（0.16 → 0.55）。方眼の線はそのまま白寄り（0.78）だが、
+;   地が明るくなったぶん **線と地の差が縮んで**、方眼としては読めるのにギラつかない。
+;   ★ ここの数値は**リニア**である（`source_color` のシェーダ既定値は変換されない）。
+;     StandardMaterial3D の `albedo_color` は sRGB 表示なので、同じ明るさでも数値が違う
+;     （リニア 0.55 ＝ sRGB 0.77）。[[godot-drone-linux-run]]
 [sub_resource type="Shader" id="Shader_ground"]
 code = "shader_type spatial;
 
-uniform vec3 base_color : source_color = vec3(0.16, 0.18, 0.17);
-uniform vec3 line_color : source_color = vec3(0.30, 0.33, 0.31);
+uniform vec3 base_color : source_color = vec3(0.55, 0.56, 0.55);
+uniform vec3 line_color : source_color = vec3(0.78, 0.79, 0.78);
 uniform float grid_m = 10.0;
 uniform float line_w = 0.02;
 
@@ -81,13 +87,23 @@ size = Vector2(20000, 20000)
 [sub_resource type="Sky" id="Sky"]
 sky_material = SubResource("Sky_mat")
 
+; ★★★★ 2026-09-10（ユーザ指示）: **機体が黒でなくグレーに見えていた**のは、
+;   マテリアルでも露出でもなく **空の映り込み**だった。機体の albedo は 0.045（ほぼ黒）だが、
+;   金属度 0.15・粗さ 0.34 の面が **明るい空を鏡のように映して** 灰色に浮く（実測 sRGB 0.36）。
+;   → `reflected_light_source = 1`（Disabled）で空の映り込みを止めると **黒に落ちる**（0.07）。
+;   ★★★★ さらに `ambient_light_source` を Sky(3) から **Color(2)** に変えた。
+;     **Sky のままだと `ambient_light_energy` は効かない**（前に踏んだ穴。[[godot-drone-linux-run]]）し、
+;     空の青が地面と機体に乗って**青灰色**になっていた。中性色にすると地面の灰色が濁らない。
+;   ★ 機体（GLB／image2sim の色）は**1 バイトも触っていない**。直したのは環境の側だけである。
 [sub_resource type="Environment" id="Env"]
 background_mode = 2
 sky = SubResource("Sky")
 tonemap_mode = 3
 tonemap_exposure = 0.85
-ambient_light_source = 3
-ambient_light_energy = 0.55
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.87, 0.9, 1)
+ambient_light_energy = 0.6
+reflected_light_source = 1
 
 [node name="DeltaquadHako" type="Node3D"]
 

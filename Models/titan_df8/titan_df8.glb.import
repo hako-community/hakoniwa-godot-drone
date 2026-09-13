@@ -1,0 +1,96 @@
+[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+uid="uid://25b35qy0p6t4"
+path="res://.godot/imported/titan_df8.glb-9e2d695c5f7df6f72a7db8785bba4309.scn"
+
+[deps]
+
+source_file="res://Models/titan_df8/titan_df8.glb"
+dest_files=["res://.godot/imported/titan_df8.glb-9e2d695c5f7df6f72a7db8785bba4309.scn"]
+
+[params]
+
+nodes/root_type=""
+nodes/root_name=""
+nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
+nodes/apply_root_scale=true
+nodes/root_scale=1.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
+_subresources={
+"nodes": {
+"PATH:drone_root/collision_arm_fl_l": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_fl_u": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_fr_l": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_fr_u": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_rl_l": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_rl_u": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_rr_l": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_rr_u": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_body": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_pylon_fl": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_pylon_fr": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_pylon_rl": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_pylon_rr": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_rtg": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_landing_skid_left": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_landing_skid_right": {
+"import/skip_import": true
+}
+}
+}
+gltf/naming_version=2
+gltf/embedded_image_handling=1
+gltf/texture_map_mode=1

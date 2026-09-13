@@ -1,0 +1,55 @@
+{
+  "_comment": [
+    "★★★★ Origin-01（4 発・30.1 kg）を**惑星の空の下で**飛ばすための可視化用 PDU 定義（2026-09-12）。",
+    "★ deltaquad_custom.json と同じ 4 ch だけ（motor/pos/battery/status）。ロボット名は **Drone_0**。",
+    "★★★ プラント側は `models/origin01/origin01_viz_pdudef.json`（tools/gen_swarm_pdudef.py --count 1）。",
+    "  **共有メモリのサイズは start の時点で決まる**ので、両方に同じ ch が居ること。",
+    "★ センサ（LiDAR/レーダ）の可視化は付けないので、点群の ch は宣言しない（宣言すると 4 GB 確保しに行く）。"
+  ],
+  "robots": [
+    {
+      "name": "Drone_0",
+      "rpc_pdu_readers": [],
+      "rpc_pdu_writers": [],
+      "shm_pdu_readers": [
+        {
+          "type": "hako_mavlink_msgs/HakoHilActuatorControls",
+          "org_name": "motor",
+          "name": "Drone_0_motor",
+          "channel_id": 0,
+          "pdu_size": 112,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "geometry_msgs/Twist",
+          "org_name": "pos",
+          "name": "Drone_0_pos",
+          "channel_id": 1,
+          "pdu_size": 72,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "hako_msgs/HakoBatteryStatus",
+          "org_name": "battery",
+          "name": "Drone_0_battery",
+          "channel_id": 4,
+          "pdu_size": 56,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        },
+        {
+          "type": "hako_msgs/DroneStatus",
+          "org_name": "status",
+          "name": "Drone_0_status",
+          "channel_id": 18,
+          "pdu_size": 64,
+          "write_cycle": 1,
+          "method_type": "SHM"
+        }
+      ],
+      "shm_pdu_writers": []
+    }
+  ]
+}

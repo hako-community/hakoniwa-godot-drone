@@ -1,0 +1,290 @@
+[gd_scene load_steps=11 format=3]
+
+; ★★★★ **惑星の空の下で 火星専用機 mars_hex6（drone2 意匠の 6 発ヘキサ・1.10 m ロータ・4.1 kg） を飛ばす**可視化シーン（2026-09-13・M-7）。
+;   ★★★★ 機体の形の正本は image2sim-framework の `config/mars_hex6_model.yaml`（→ .blend → この GLB）。
+;     物理（MJCF・質量・ロータの位置と向き）は同じ .blend から hakoniwa-mujoco-drone の `tools/blend2mjcf.py` が作る
+;     ＝ **絵と物理が同じ形**。ロータの ch 番号は `mars_hex6_meta.json` の index（blend_name → GLB のノード名）。
+;   ★ `planet_hako.tscn`（Origin-01）から機体の部分だけを差し替えたもの。空・地面・惑星は同じ `planet_environment.gd`。
+;   ★ GLB の `collision_*` は `.glb.import` の `_subresources` で import から外してある（DeltaQuad と同じ）。
+;
+;   プラント : hakoniwa-mujoco-drone の `swarm_app --atmosphere mars|titan`
+;   このシーン: Drone_0/pos(ch1) と Drone_0/motor(ch0) を読んで機体を動かし、プロペラを回す
+;
+; ★★★★ **絵と物理は別物である。** ここで変えるのは空・光・地面・霧だけで、
+;   重力も大気密度も推力も**プラント側の `--atmosphere` が決める**。
+;   逆に言うと、**絵だけ火星にして飛ばす**ことも（間違いとして）できてしまうので、
+;   `tools/planet_godot.bash` が **両方に同じ惑星名を渡す**ようにしてある。
+;
+; ★★★ 惑星の切り替えは `HAKO_PLANET=earth|mars|titan`（`Scripts/Drone/planet_environment.gd`）。
+;   シーンを 3 つに増やさないこと —— 機体の配線が 3 か所に散ると必ずずれる。
+;
+; ★ .tscn を手書きするときの落とし穴（[[godot-drone-linux-run]]）:
+;   * Transform3D(...) の 12 数は **列ごと**
+;   * node_paths= に書けるのは **Node 型の export だけ**（NodePath 型は無警告で空になる）
+;   * このリポジトリの機首は **-Z**（後ろ = +Z）
+;   * SensorVizRig は置かない（radar_points を無条件に read 宣言して 4 GB 確保しに行く）
+;   * 起動順は決め打ち: プラント → Godot → hako-cmd start
+
+[ext_resource type="Script" path="res://Scripts/hakoniwa-sim/sim/HakoAsset.cs" id="1_hako"]
+[ext_resource type="Script" path="res://Scripts/Hakoniwa/HakoSim/Drone/DroneAvatar.cs" id="2_avatar"]
+[ext_resource type="Script" path="res://Scripts/Drone/DronePropeller.cs" id="3_prop"]
+[ext_resource type="PackedScene" path="res://Models/mars_hex6/mars_hex6.glb" id="4_body"]
+[ext_resource type="Script" path="res://Scripts/Drone/planet_chase_camera.gd" id="6_gimbal"]
+[ext_resource type="Script" path="res://Scripts/Drone/FlightShotRecorder.cs" id="7_shot"]
+[ext_resource type="Script" path="res://Scripts/Drone/planet_environment.gd" id="8_planet"]
+
+; ★★★ 地面は 20 km 四方 ＋ 10 m 方眼（deltaquad_hako と同じ）。
+;   ★★★★ **方眼が無いと「速く飛んでいるのか止まっているのか」が絵で分からない。**
+;   ★ 色は `planet_environment.gd` が惑星ごとに差し替える（ここの既定値は地球）。
+;   ★ シェーダの `source_color` は**リニア**。StandardMaterial3D の sRGB とは数値が違う。
+[sub_resource type="Shader" id="Shader_ground"]
+code = "shader_type spatial;
+
+// ★★★★ 惑星の地面（2026-09-12）。**1 枚のシェーダで 地球／火星／タイタン を描く。**
+//
+//   terrain_mode 0 … 地球: 平らな方眼（従来と同じ絵）
+//   terrain_mode 1 … 火星: ごつごつした岩石平原 ＋ 浅いクレータ
+//   terrain_mode 2 … タイタン: **平行な砂丘**（実際のタイタン赤道帯の縦列砂丘）
+//
+// ★★★ **これは想像であって実測地形ではない。** 手続き生成のノイズで
+//   「それらしく」見せているだけである。実地形が要るなら
+//   火星は MOLA/HiRISE の DEM、タイタンは Cassini のレーダ高度計を読み込むのが筋。
+//   ★ 縮尺だけは実物に寄せてある（下の注記）。
+//
+// ★★★★ **方眼は惑星でも残す。** 一様な地面だと「速く飛んでいるのか止まっているのか」が
+//   絵で分からない（V8 で踏んだ）。地形の上から薄く重ねる。
+
+uniform vec3 base_color : source_color = vec3(0.55, 0.56, 0.55);
+uniform vec3 line_color : source_color = vec3(0.78, 0.79, 0.78);
+uniform vec3 high_color : source_color = vec3(0.62, 0.63, 0.62);
+uniform float grid_m = 10.0;
+uniform float line_w = 0.02;
+uniform int terrain_mode = 0;
+uniform float terrain_amp = 0.0;    // 起伏の高さ [m]
+uniform float terrain_len = 120.0;  // 起伏の代表波長 [m]
+// ★★★★ 2026-09-13: **離陸点のまわりを平らにする**（物理の地面は平らな z=0 なので、
+//   絵の砂丘が原点で盛り上がっていると**離陸前の機体が砂丘に埋まって見える**）。
+//   半径 pad_radius の中は高さ 0・pad_blend の幅でなめらかに元の起伏へ戻す。0 なら従来どおり。
+uniform float pad_radius = 0.0;
+uniform float pad_blend = 1.0;
+
+float hash12(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+float vnoise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	float a = hash12(i);
+	float b = hash12(i + vec2(1.0, 0.0));
+	float c = hash12(i + vec2(0.0, 1.0));
+	float d = hash12(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+	float v = 0.0;
+	float a = 0.5;
+	for (int i = 0; i < 4; i++) {
+		v += a * vnoise(p);
+		p *= 2.03;
+		a *= 0.5;
+	}
+	return v;
+}
+
+// 高さ [m]。xz は**世界座標**。
+float raw_height_at(vec2 xz) {
+	if (terrain_mode == 1) {
+		// ★ 火星: fbm の岩石平原 ＋ 浅いクレータ（セルごとに 1 個・半径はまちまち）
+		float h = terrain_amp * (fbm(xz / terrain_len) - 0.5) * 2.0;
+		vec2 cell = floor(xz / (terrain_len * 3.0));
+		vec2 c = (cell + vec2(hash12(cell), hash12(cell + 7.1))) * (terrain_len * 3.0);
+		float r = terrain_len * (0.35 + 0.5 * hash12(cell + 3.7));
+		float d = length(xz - c) / r;
+		// 縁が盛り上がって中が凹む（クレータの断面）
+		h += terrain_amp * 1.6 * (exp(-d * d * 2.2) * -1.0 + exp(-(d - 1.0) * (d - 1.0) * 9.0) * 0.45);
+		return h;
+	}
+	if (terrain_mode == 2) {
+		// ★★★ タイタン: **平行な縦列砂丘**（実物は高さ 80〜130 m・間隔 1〜3 km だが、
+		//   高度 15 m を飛ぶ絵では壁になってしまうので **1/10 の縮尺**で置く）。
+		float ridge = sin(xz.x / terrain_len * 6.2831853 + fbm(xz / (terrain_len * 4.0)) * 3.0);
+		ridge = pow(0.5 + 0.5 * ridge, 2.2);          // 稜線を尖らせ、谷を広く
+		float wobble = fbm(xz / (terrain_len * 1.7)) - 0.5;
+		return terrain_amp * (ridge + 0.25 * wobble);
+	}
+	return 0.0;
+}
+
+float height_at(vec2 xz) {
+	float h = raw_height_at(xz);
+	if (pad_radius > 0.0) {
+		h *= smoothstep(pad_radius, pad_radius + max(pad_blend, 0.001), length(xz));
+	}
+	return h;
+}
+
+varying vec3 world_pos;
+
+void vertex() {
+	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float h = height_at(wp.xz);
+	VERTEX.y += h;
+	// 法線は高さの差分から作る（これを忘れると起伏があるのに真っ平らに見える）
+	float e = max(1.0, terrain_len * 0.02);
+	float hx = height_at(wp.xz + vec2(e, 0.0)) - height_at(wp.xz - vec2(e, 0.0));
+	float hz = height_at(wp.xz + vec2(0.0, e)) - height_at(wp.xz - vec2(0.0, e));
+	NORMAL = normalize(vec3(-hx / (2.0 * e), 1.0, -hz / (2.0 * e)));
+	world_pos = wp + vec3(0.0, h, 0.0);
+}
+
+void fragment() {
+	vec2 g = abs(fract(world_pos.xz / grid_m) - 0.5);
+	float d = max(g.x, g.y);
+	float w = line_w + fwidth(d) * 1.5;
+	float line = smoothstep(0.5 - w, 0.5, d);
+	// 高い所ほど明るく（砂丘の稜線・クレータの縁が読める）
+	float t = terrain_amp > 0.001 ? clamp(world_pos.y / terrain_amp * 0.5 + 0.5, 0.0, 1.0) : 0.0;
+	vec3 ground = mix(base_color, high_color, t);
+	// ★ 岩の粒感（近くだけ効く細かいノイズ）
+	ground *= 0.88 + 0.24 * fbm(world_pos.xz * 0.7);
+	ALBEDO = mix(ground, line_color, line * 0.55);
+	ROUGHNESS = 0.95;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="Mat_ground"]
+shader = SubResource("Shader_ground")
+
+; ★★★ 頂点を動かすので **分割が要る**（分割 0 の板は 4 頂点しかないので、
+;   シェーダで高さを足しても平らなまま）。2 km 四方 × 400 分割 ＝ 5 m ごと。
+;   ★ その外側は `FarGround`（20 km の平板）が受け持つ。霧で継ぎ目は見えない。
+[sub_resource type="PlaneMesh" id="Mesh_ground"]
+material = SubResource("Mat_ground")
+size = Vector2(2000, 2000)
+subdivide_width = 400
+subdivide_depth = 400
+
+[sub_resource type="ShaderMaterial" id="Mat_far"]
+shader = SubResource("Shader_ground")
+
+[sub_resource type="PlaneMesh" id="Mesh_far"]
+material = SubResource("Mat_far")
+size = Vector2(20000, 20000)
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("Sky_mat")
+
+; ★ 機体（Origin-01）は黒に近い塗装なので、空の映り込みで灰色に浮く（V8 で踏んだ）。
+;   → `reflected_light_source = 1`（Disabled）。★ `ambient_light_source = 2`（Color）にしないと
+;   `ambient_light_energy` が効かない（Sky のままだと無視される）。
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+tonemap_mode = 3
+tonemap_exposure = 0.85
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.87, 0.9, 1)
+ambient_light_energy = 0.6
+reflected_light_source = 1
+
+[node name="PlanetHako" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.768221, -0.504536, 0.394055, 0, 0.615534, 0.78811, -0.640184, -0.605443, 0.472866, 0, 12, 0)
+shadow_enabled = true
+light_energy = 1.1
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_ground")
+
+; ★ 遠景（20 km）。地形の外側が「空中に浮いた板」に見えないように敷く。
+;   ★ 同じシェーダを使うが `terrain_mode` は 0 のまま（平ら）にして、色だけ合わせる。
+[node name="FarGround" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+mesh = SubResource("Mesh_far")
+
+; ★★★ **追従カメラ**。固定カメラだと離陸したとたんに豆粒になる。
+;   ★ 機首は -Z なので **後ろ = +Z**。Origin-01 は差し渡し 1.7 m あるので少し引く。
+; ★★★★ 2026-09-13: 追従カメラは planet_chase_camera.gd（機首を回しても機体の後ろから見る・ゲームパッドのデモ用）
+[node name="Camera3D" type="Camera3D" parent="."]
+script = ExtResource("6_gimbal")
+target_path = NodePath("../Drone")
+offset = Vector3(0, 3.2, 12.0)
+fov = 55.0
+
+[node name="Hakoniwa" type="Node3D" parent="." node_paths=PackedStringArray("hakoObjects")]
+script = ExtResource("1_hako")
+customJsonFilePath = "./config/origin01_custom.json"
+hakoObjects = [NodePath("../Drone")]
+
+; DroneAvatar は body(Node3D) と rd(RigidBody3D) が未設定だと EventInitialize で例外を投げる。
+; 物理は MuJoCo 側が解くので RigidBody3D は置くだけ（DroneAvatar が Freeze にする）。
+[node name="Drone" type="Node3D" parent="." node_paths=PackedStringArray("body", "rd")]
+script = ExtResource("2_avatar")
+robotName = "Drone_0"
+body = NodePath("model")
+rd = NodePath("RigidBody3D")
+useTouchSensor = false
+
+[node name="RigidBody3D" type="RigidBody3D" parent="Drone"]
+
+; y=0.395 … GLB の原点は MJCF の body 原点（接地面より 0.395 m 上 ＝ mars_hex6_meta.json の spawn_z_m）。
+[node name="model" parent="Drone" instance=ExtResource("4_body")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3950, 0)
+
+; ch 番号 = meta の index。回転の符号は meta の spin（ccw = +1）。傾いたロータは GLB の中で既に傾いている。
+[node name="Propellers" type="Node3D" parent="Drone"]
+script = ExtResource("3_prop")
+propellerNodeNames = PackedStringArray("rotor_r3_spin", "rotor_r2_spin", "rotor_r4_spin", "rotor_r1_spin", "rotor_r5_spin", "rotor_r6_spin")
+propellerSearchRoot = NodePath("../model")
+spinDirections = PackedInt32Array(1, -1, -1, 1, 1, -1)
+maxRotationSpeed = 250.0
+enableAudio = false
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+; ★★★★ **絵に土俵を焼き込む。** あとで PNG を見たとき、どの惑星なのか分からなくなるのが
+;   いちばん困る（手打ちの実験が言い伝えになるのと同じ）。この行は惑星スクリプトが書く。
+[node name="Planet" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 1200.0
+offset_bottom = 40.0
+text = "planet: (waiting)"
+
+; ★ この行は FlightShotRecorder が毎フレーム書き換える（4 本の指令値と経過時間）。
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 16.0
+offset_top = 40.0
+offset_right = 1200.0
+offset_bottom = 68.0
+text = "mars_hex6 (hakoniwa PDU) - waiting for the plant..."
+
+; ★ export が **NodePath 型**なので node_paths= には書かない。
+[node name="ShotRecorder" type="Node" parent="."]
+script = ExtResource("7_shot")
+propellersPath = NodePath("../Drone/Propellers")
+statusLabelPath = NodePath("../HUD/Status")
+liftRotorCount = 6
+runningLabel = "ROTORS RUNNING"
+
+; ★★★ 惑星の空・光・地面・霧を差し替える（`HAKO_PLANET`）。**物理は 1 ビットも変えない。**
+[node name="PlanetEnv" type="Node" parent="."]
+script = ExtResource("8_planet")
+ground_material_path = NodePath("../Ground")
+far_ground_path = NodePath("../FarGround")
+world_environment_path = NodePath("../WorldEnvironment")
+sun_path = NodePath("../Sun")
+label_path = NodePath("../HUD/Planet")
+drone_visual_path = NodePath("../Drone")
+camera_path = NodePath("../Camera3D")

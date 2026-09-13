@@ -1,0 +1,108 @@
+[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+uid="uid://crgdjpkup44fs"
+path="res://.godot/imported/mars_hex6.glb-746431b1084cc4a1a1855cf1a99dee0c.scn"
+
+[deps]
+
+source_file="res://Models/mars_hex6/mars_hex6.glb"
+dest_files=["res://.godot/imported/mars_hex6.glb-746431b1084cc4a1a1855cf1a99dee0c.scn"]
+
+[params]
+
+nodes/root_type=""
+nodes/root_name=""
+nodes/root_script=null
+mesh_library/use_node_names_as_mesh_names=false
+array_mesh/deduplicate_surfaces=true
+nodes/apply_root_scale=true
+nodes/root_scale=1.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
+_subresources={
+"nodes": {
+"PATH:drone_root/collision_arm_r1": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_r2": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_r3": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_r4": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_r5": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_arm_r6": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_body": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r1": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r2": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r3": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r4": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r5": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_foot_r6": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r1": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r2": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r3": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r4": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r5": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_leg_r6": {
+"import/skip_import": true
+},
+"PATH:drone_root/collision_frame_panel_mast": {
+"import/skip_import": true
+}
+}
+}
+gltf/naming_version=2
+gltf/embedded_image_handling=1
+gltf/texture_map_mode=1

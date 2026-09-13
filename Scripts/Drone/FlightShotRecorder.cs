@@ -30,6 +30,13 @@ namespace hakoniwa.drone
 		[Export] public float stoppedThreshold = 0.01f;
 		/// <summary>揚力ロータの本数。これ以降の指令はプッシャとして表示する。</summary>
 		[Export] public int liftRotorCount = 4;
+		/// <summary>
+		/// ★★★★ 揚力ロータが回っているときの表示（2026-09-12）。
+		///   既定は DeltaQuad（リフト＆クルーズ）の文言のまま ＝ **既存シーンは 1 文字も変わらない**。
+		///   ★ マルチロータのシーンでは「HOVER / TRANSITION」は嘘に近いので、
+		///     シーン側で "ROTORS RUNNING" などに差し替える。**HUD も土俵の一部である。**
+		/// </summary>
+		[Export] public string runningLabel = "HOVER / TRANSITION";
 
 		private DronePropeller propellers;
 		private Label status;
@@ -87,10 +94,14 @@ namespace hakoniwa.drone
 			{
 				sb.Append(i > 0 ? " " : "").Append($"{c[i]:F2}");
 			}
-			sb.Append("]  pusher[");
-			for (int i = liftRotorCount; i < c.Length; i++)
+			// ★ 揚力ロータしか無い機体（ふつうのマルチロータ）では pusher[] を出さない。
+			if (c.Length > liftRotorCount)
 			{
-				sb.Append(i > liftRotorCount ? " " : "").Append($"{c[i]:F2}");
+				sb.Append("]  pusher[");
+				for (int i = liftRotorCount; i < c.Length; i++)
+				{
+					sb.Append(i > liftRotorCount ? " " : "").Append($"{c[i]:F2}");
+				}
 			}
 			sb.Append("]  ");
 
@@ -103,7 +114,7 @@ namespace hakoniwa.drone
 			{
 				if (Mathf.Abs(c[i]) >= stoppedThreshold) pusherRunning = true;
 			}
-			if (!liftStopped) sb.Append("HOVER / TRANSITION");
+			if (!liftStopped) sb.Append(runningLabel);
 			else if (pusherRunning) sb.Append("CRUISE - lift rotors STOPPED, wing + pusher only");
 			else sb.Append("IDLE - no command (plant not driving)");
 			return sb.ToString();

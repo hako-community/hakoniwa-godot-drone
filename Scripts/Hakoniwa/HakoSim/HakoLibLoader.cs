@@ -90,7 +90,19 @@ namespace Hakoniwa.Core.Utils
             }
 
             string fileName = $"{prefix}{baseName}{extension}";
-            
+
+            // HAKO_NATIVE_LIB_DIR: 同梱の Plugins より先に探すフォルダ（未設定なら従来どおり）。
+            // プラントと同じ版の箱庭コア（shakoc など）を読ませるための口。共有メモリの構造は
+            // コアの版と上限で決まるので、プラントと違う版の shakoc で繋ぐと読めないか壊れる。
+            // そのフォルダに無いライブラリ（hako_service_c など）は従来どおり Plugins から読む。
+            string overrideDir = System.Environment.GetEnvironmentVariable("HAKO_NATIVE_LIB_DIR");
+            if (!string.IsNullOrEmpty(overrideDir))
+            {
+                string overridePath = Path.Combine(overrideDir, fileName);
+                if (File.Exists(overridePath)) return overridePath;
+                GD.Print($"HakoLibLoader: {fileName} is not in HAKO_NATIVE_LIB_DIR ({overrideDir}); using Plugins");
+            }
+
             // Godotプロジェクトの Plugins ディレクトリ配下を探索
             // 実行環境（エディタ/エクスポート）に応じてカレントディレクトリを基準にする
             string projectRoot = Directory.GetCurrentDirectory();

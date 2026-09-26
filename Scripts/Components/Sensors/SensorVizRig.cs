@@ -88,6 +88,10 @@ namespace hakoniwa.objects.core.sensors
             public float ElEndDeg = float.NaN;
             public Vector3 MountRos = Vector3.Zero;   // ROS body frame: x fwd, y left, z up
             public float MountYawDeg;
+            // The sensor's publish rate (manifest params.update_rate_hz). The point
+            // cloud is only re-read when a new scan can have arrived; 0 = unknown,
+            // re-read every frame.
+            public float UpdateRateHz;
 
             // Distance-dependent detection model (the RCS stand-in), mirroring
             // math::DetectionProbability on the sensor side:
@@ -201,6 +205,10 @@ namespace hakoniwa.objects.core.sensors
             public int Count;
             public float NearestM = -1f;
             public float NearestAzDeg;
+            // Result of the last scan read, kept between scans (see PointsDue).
+            public long LastReadUsec = long.MinValue;
+            public readonly List<Detection> Dets = new List<Detection>();
+            public int WarnCount;
         }
         private readonly List<RadarView> radars = new List<RadarView>();
         private readonly List<SensorSpec> radarSpecs = new List<SensorSpec>();
@@ -209,6 +217,8 @@ namespace hakoniwa.objects.core.sensors
         private MultiMesh lidarPoints;
         private Label hud;
         private int lidarCount, radarCount;
+        private long lidarLastReadUsec = long.MinValue;
+        private int lidarWarnCount;
         private float radarNearestM = -1f, radarNearestAzDeg;
         // Detections from every radar, for the HUD.
         private readonly List<Detection> allDets = new List<Detection>();
@@ -298,9 +308,13 @@ namespace hakoniwa.objects.core.sensors
         {
             if (mode == SensorVizMode.LidarOnly)
             {
-                lidarCount = UpdatePoints(pduManager, LidarPduName, lidarPoints, false);
-                UpdateDetections(lidarDet, MinPointsLidar);
-                warnCount = frameWarnCount;   // one sensor, so the frame total IS the total
+                if (PointsDue(ref lidarLastReadUsec, lidarSpec.UpdateRateHz))
+                {
+                    lidarCount = UpdatePoints(pduManager, LidarPduName, lidarPoints, false);
+                    UpdateDetections(lidarDet, MinPointsLidar);
+                    lidarWarnCount = frameWarnCount;
+                }
+                warnCount = lidarWarnCount;   // one sensor, so its total IS the total
             }
             else if (mode == SensorVizMode.RadarOnly)
             {
@@ -310,13 +324,19 @@ namespace hakoniwa.objects.core.sensors
                 warnCount = 0;
                 foreach (RadarView v in radars)
                 {
-                    v.Count = UpdatePoints(pduManager, v.PduName, v.Points, true);
-                    v.NearestM = radarNearestScratch;
-                    v.NearestAzDeg = radarNearestAzScratch;
-                    UpdateDetections(v.Det, MinPointsRadar);
+                    if (PointsDue(ref v.LastReadUsec, v.Spec.UpdateRateHz))
+                    {
+                        v.Count = UpdatePoints(pduManager, v.PduName, v.Points, true);
+                        v.NearestM = radarNearestScratch;
+                        v.NearestAzDeg = radarNearestAzScratch;
+                        UpdateDetections(v.Det, MinPointsRadar);
+                        v.Dets.Clear();
+                        v.Dets.AddRange(dets);
+                        v.WarnCount = frameWarnCount;
+                    }
                     radarCount += v.Count;
-                    allDets.AddRange(dets);
-                    warnCount += frameWarnCount;
+                    allDets.AddRange(v.Dets);
+                    warnCount += v.WarnCount;
                     if (v.NearestM > 0f && (radarNearestM < 0f || v.NearestM < radarNearestM))
                     {
                         radarNearestM = v.NearestM;
@@ -407,6 +427,9 @@ namespace hakoniwa.objects.core.sensors
         {
             if (next == mode) return;
             mode = next;
+            // Draw the newly selected sensor right away instead of waiting a period.
+            lidarLastReadUsec = long.MinValue;
+            foreach (RadarView v in radars) v.LastReadUsec = long.MinValue;
             ApplyMode();
             GD.Print($"[SensorViz] mode -> {mode}");
         }
@@ -533,6 +556,7 @@ namespace hakoniwa.objects.core.sensors
                     float hs = GetF(prm, "horizontal_fov_start_deg", -180f);
                     float he = GetF(prm, "horizontal_fov_end_deg", 180f);
                     lidarSpec.HFovDeg = he - hs;
+                    lidarSpec.UpdateRateHz = GetF(prm, "update_rate_hz", 0.0f);
                     ReadMount(comp, lidarSpec);
                 }
                 else if (type == "radar")
@@ -544,6 +568,7 @@ namespace hakoniwa.objects.core.sensors
                     spec.RangeM = GetF(prm, "range", radarSpec.RangeM);
                     spec.HFovDeg = GetF(prm, "horizontal_fov_deg", radarSpec.HFovDeg);
                     spec.VFovDeg = GetF(prm, "vertical_fov_deg", radarSpec.VFovDeg);
+                    spec.UpdateRateHz = GetF(prm, "update_rate_hz", 0.0f);
                     // Optional asymmetric window; absent keys stay NaN and the
                     // symmetric FOV above is used instead.
                     spec.AzStartDeg = GetF(prm, "azimuth_start_deg", float.NaN);
@@ -837,6 +862,22 @@ namespace hakoniwa.objects.core.sensors
                 im.SurfaceSetColor(c); im.SurfaceAddVertex(Dir(az, e0, r));
                 im.SurfaceSetColor(c); im.SurfaceAddVertex(Dir(az, e1, r));
             }
+        }
+
+        // True when a new scan can have been published since `lastUsec` (simulation
+        // time), i.e. at the sensor's own update rate. A radar PDU is a fixed-size
+        // buffer of ~355 KB; decoding it and rebuilding every point on every physics
+        // frame, while the sensor publishes at 10-20 Hz, made the visualizer the
+        // slowest asset (2 drones + radar: 0.10x real time, 0.81x with the view off).
+        // Rate unknown (0) or no simulation clock -> every frame, as before.
+        private static bool PointsDue(ref long lastUsec, float rateHz)
+        {
+            if (rateHz <= 0.0f || HakoAsset.Instance == null) return true;
+            long now = HakoAsset.Instance.GetWorldTime();
+            long period = (long)(1_000_000.0 / rateHz);
+            if (lastUsec != long.MinValue && now >= lastUsec && now - lastUsec < period) return false;
+            lastUsec = now;
+            return true;
         }
 
         // ======================================================================

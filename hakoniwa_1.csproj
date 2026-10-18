@@ -8,4 +8,9 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
+  <!-- Offline mode (no Hakoniwa plant): fetch the native set pinned in native.lock.json (hakodrone.dll, mujoco.dll,
+       SimModels/courses_drone) before building. Skips quickly when already fetched. Set HAKO_SKIP_FETCH_NATIVE=1 to skip. -->
+  <Target Name="FetchNative" BeforeTargets="BeforeBuild" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\fetch_native.ps1&quot;" />
+  </Target>
 </Project>

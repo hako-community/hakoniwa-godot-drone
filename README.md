@@ -85,6 +85,28 @@ hakoniwa-godot-drone/
 2. Godot Engine (Mono版) を起動し、本フォルダの `project.godot` を読み込みます。
 3. `Scenes/drone_1.tscn` などを開いて「プロジェクトを実行（F5）」または「現在のシーンを実行（F6）」します。
 
+### 1.1 箱庭が居るとき・居ないとき（2026-10-18〜）
+
+| 場面 | 箱庭（プラント）が居る | 居ない |
+| :--- | :--- | :--- |
+| `drone_1`・`drone_cat_1`・`sensor_viz` | 箱庭経由で動く（PDU を写す） | **ローカル**で動く（内蔵 FC の `hakodrone.dll`・機体は `courses_drone`）。ゲームパッドかキーボードで操縦（アームはスティックの倒し込み、キーボードは Space） |
+| そのほか（`drone3_hako`・`planet_*`・`deltaquad_hako`・`vtol_quadplane_hako`・`two_drone_avoid`） | 箱庭経由で動く | プラントが立つのを待ち、立ったら自動で繋がる |
+
+* どちらで動くかは、場面の `DroneAvatar` の `enableOfflineMode` で決まります（hakodrone で配っている機体に合う、Origin-01 1 機の場面だけ有効）。
+* 箱庭が居るかは、共有メモリの `mmap-0xff.bin`（`HAKO_CONFIG_PATH` の `core_mmap_path`）で判断します。
+  箱庭が居ないまま箱庭コア（shakoc）を呼ぶと落ちるため、呼ぶ前に確かめています。
+
+### 1.2 内蔵 FC（hakodrone.dll）の取得（Windows）
+
+`hakodrone.dll`・`mujoco.dll`（＋条文・ヘッダ・`manifest.json`）と機体の物理の定義（`SimModels/courses_drone`）は git に入れていません。
+`native.lock.json` に書いた版を、ビルドのとき（Godot でのビルド・`dotnet build`）に `tools/fetch_native.ps1` が
+非公開の [hako-community/releases-channel](https://github.com/hako-community/releases-channel) から取ってきて置きます。
+
+* 初回だけ: `winget install GitHub.cli` → `gh auth login`（releases-channel を読む権限が要ります）
+* 一度取れば、次からはネットワーク無しでもそのまま建ちます（版が同じなら取り直さない）
+* 取らずに建てるとき（認証の無い CI など）: 環境変数 `HAKO_SKIP_FETCH_NATIVE=1`（箱庭経由だけで使えます）
+* 開発中の hakodrone.dll を試すときは、環境変数 `HAKO_NATIVE_LIB_DIR` に hakodrone.dll のあるフォルダを指定します
+
 ### 2. 箱庭外部制御 / シミュレーション連携
 
 箱庭コンダクタや外部コントローラ（PX4 / ROS 2 / Python API 等）と通信連携して実行する場合は、箱庭の標準ワークフローに従ってコンダクタを起動後に Godot 側の「START」ボタンを押下してシミュレーションを開始します。

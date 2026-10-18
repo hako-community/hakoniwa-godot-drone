@@ -1,0 +1,120 @@
+{
+  "_comment": [
+    "Gamepad stick conditioning. Matched against Input.GetJoyName() by case-insensitive substring;",
+    "the first matching profile wins, otherwise 'default' is used. Matching is by NAME because on",
+    "Quest/Android GetJoyGuid() returns the ASCII of the name and GetJoyInfo() has no vendor/product",
+    "(see devai/GAMEPAD_SUPPORT_PLAN.md, Phase 0 results).",
+    "",
+    "HOW MERGING WORKS -- read before editing:",
+    "  'default' is loaded first, then a matching profile overwrites EVERY field it declares.",
+    "  A profile must therefore declare only what genuinely differs from default. On 2026-07-25",
+    "  the Xbox profile restated all six fields, so retuning 'default' had no effect on the Xbox",
+    "  pad and the sticks stayed twitchy for another flight. Keep profiles minimal.",
+    "",
+    "deadzone   : stick offset ignored around centre. Measured resting offsets on the Xbox Series X",
+    "             pad were up to 0.06, so anything below ~0.10 lets the drone drift on its own.",
+    "exponent   : response curve. 1.0 = linear, higher = gentler near centre while keeping full",
+    "             authority at the extremes. TURN THIS FIRST when the sticks feel twitchy.",
+    "             1.5 -> 2.5 cuts the command at half stick to roughly a third on every axis.",
+    "yaw/throttle/roll/pitch : per-axis sensitivity multipliers, applied after the curve. These DO",
+    "             reduce full-deflection authority, so prefer 'exponent' unless one axis alone is hot.",
+    "",
+    "             roll/pitch  full stick = DroneControl.stick_strength m/s of target GROUND SPEED.",
+    "                         param-api-mixer.txt sets ANGLE_CONTROL_ENABLE 0, so these channels",
+    "                         feed the horizontal SPEED loop -- the earlier note here claiming the",
+    "                         15.0 was an angle matching PID_POS_MAX_ROLL/PITCH was wrong, and that",
+    "                         mistake is what hid the 45 deg 'roll and pitch get mixed' fault for a",
+    "                         day. stick_strength is now 3.0 m/s (reachable); these stay at 1.0.",
+    "             throttle    PutVertical gets stick_vertical_strength (15.0) against the altitude",
+    "                         loop's PID_ALT_MAX_SPD = 5.5. 0.18 * 15 = 2.7 m/s full scale.",
+    "                         MEASURED GOOD in run17: commands of 0.4 / 0.9 / 1.9 / 2.5 m/s gave",
+    "                         climb rates of 0.40 / 0.93 / 1.91 / 2.46 m/s. Lower to ~0.13 if a",
+    "                         2 m/s trainer ceiling is wanted.",
+    "             yaw         full stick = stick_yaw_strength (100.0) * this. run17 measures the",
+    "                         airframe at ~87 deg/s per unit of that command, so 0.12 meant roughly",
+    "                         600-1000 deg/s at full stick -- which is the whole 'it spins when I",
+    "                         touch the throttle' report, not stick noise. 0.014 * 100 * 87 =",
+    "                         ~120 deg/s, the usual trainer figure. MEASURED.",
+    "",
+    "yaw_deadzone / yaw_exponent : optional per-axis overrides for the YAW axis only. Omit either",
+    "             one and it inherits 'deadzone' / 'exponent'. They exist because yaw has to solve a",
+    "             problem the other axes do not: on the Touch stick, X leaks a median 0.34 (max",
+    "             0.60) while Y is held up for throttle. run18 confirmed 0.014 with the shared",
+    "             0.15 / 2.5 pair holds that leak to 1.9 deg/s -- but it also left real yaw inputs",
+    "             feeling dead (~13 deg/s at half stick), which is the 'yaw feels bad' report.",
+    "             The split fixes both: the deadzone absorbs the leak, the curve carries the feel.",
+    "",
+    "             TO RETUNE (no rebuild -- push this file, restart the app):",
+    "               yaw feels dead in the middle  -> lower yaw_exponent (1.4 -> 1.0 is linear)",
+    "               it spins when you throttle    -> raise yaw_deadzone (0.30 -> 0.40)",
+    "               full stick too fast / slow    -> change yaw (0.014 == ~120 deg/s at full)",
+    "             Startup logs the values in use: [XRInput] tuning: ... yawdz=... yawexp=...",
+    "",
+    "  The yaw gain is the airframe's, not the stick's, so 'default' (gamepad) needed the same",
+    "  0.014. It does NOT get a yaw_deadzone: the cross-talk above is the Touch thumbstick's",
+    "  geometry, and a pad's measured resting offset is only 0.04-0.06.",
+    "  See devai/YAW_THROTTLE_SENSITIVITY.md.",
+    "",
+    "To retune on-device WITHOUT rebuilding, push a copy of this file to:",
+    "  adb push gamepad_tuning.json /sdcard/Android/data/com.hakoniwa.dronesimulator/files/",
+    "then restart the app (or power-cycle the pad). The external file overrides this one."
+  ],
+
+  "_comment_xr": [
+    "The 'xr' section conditions the Quest Touch controllers (HakoDroneXrInputManager). It is",
+    "merged over 'default' exactly like a gamepad profile, so declare only what differs.",
+    "",
+    "Until 2026-07-26 the XR path had these values hard-coded at deadzone 0.15 / exponent 1.5 and",
+    "EVERY sensitivity 1.0 -- yaw ran 8x and throttle 5.5x hotter than the gamepad, even though",
+    "both feed the same DroneControl.stick_yaw_strength (100) and stick_strength (15). That is the",
+    "whole reason the Xbox pad felt right while the Touch controllers were reported as too",
+    "sensitive on the left stick.",
+    "",
+    "The values below started as the gamepad's set, transplanted; 'yaw' is now set from run17's",
+    "measured yaw rates instead (see the yaw note above). One Touch-specific fact came out of that",
+    "flight: pushing the LEFT thumbstick fully up also deflects it sideways by 0.34 on average and",
+    "up to 0.60 (n=117 samples with the throttle past half). That is the thumb's geometry, not a",
+    "fault, and no deadzone that still leaves yaw usable can clear 0.34 -- but at yaw 0.014 the",
+    "leak is worth only ~3 deg/s, so it no longer matters. Do not raise 'yaw' back without either",
+    "re-measuring that cross-talk or giving yaw its own, much larger deadzone."
+  ],
+
+  "xr": {
+    "deadzone": 0.15,
+    "exponent": 2.5,
+    "yaw": 0.014,
+    "yaw_deadzone": 0.30,
+    "yaw_exponent": 1.4,
+    "throttle": 0.18,
+    "roll": 1.0,
+    "pitch": 1.0
+  },
+
+  "default": {
+    "deadzone": 0.15,
+    "exponent": 2.5,
+    "yaw": 0.014,
+    "yaw_exponent": 1.4,
+    "throttle": 0.18,
+    "roll": 1.0,
+    "pitch": 1.0
+  },
+
+  "profiles": [
+    {
+      "_comment": "Resting offsets measured at 0.04-0.06 on a Series X pad; 0.15 clears them. Everything else inherits 'default'.",
+      "match": "Xbox",
+      "deadzone": 0.15
+    },
+    {
+      "_comment": "Sticks recentre tighter than Xbox, so a smaller deadzone is usable. UNVERIFIED on hardware.",
+      "match": "DualSense",
+      "deadzone": 0.12
+    },
+    {
+      "_comment": "DS4 sticks wear and drift more, so a wider deadzone. UNVERIFIED on hardware.",
+      "match": "DualShock",
+      "deadzone": 0.18
+    }
+  ]
+}

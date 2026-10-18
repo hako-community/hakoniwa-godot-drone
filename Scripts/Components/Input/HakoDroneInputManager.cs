@@ -7,6 +7,9 @@ namespace hakoniwa.objects.core
     {
         public static HakoDroneInputManager Instance { get; private set; }
 
+        private GamepadTuning tuning = new GamepadTuning();
+        public GamepadTuning Tuning => tuning;
+
         // Button state tracking
         private class ButtonState
         {
@@ -28,6 +31,7 @@ namespace hakoniwa.objects.core
         private ButtonState _wButton = new ButtonState(); // Y
         private ButtonState _upButton = new ButtonState();
         private ButtonState _downButton = new ButtonState();
+        private ButtonState _menuButton = new ButtonState();
 
         public override void _Ready()
         {
@@ -38,44 +42,29 @@ namespace hakoniwa.objects.core
             }
 
             Instance = this;
-            // DontDestroyOnLoad equivalent is not strictly needed if this is an Autoload or part of a persistent scene,
-            // but effectively for this manager we keep it simple. 
-            // If it needs to persist across scene changes in Godot, it should be an Autoload.
+            int deviceId = 0;
+            string joyName = Input.GetJoyName(deviceId);
+            tuning = GamepadTuning.Load(joyName);
+            GD.Print($"HakoDroneInputManager: loaded tuning => {tuning}");
         }
 
         public override void _Process(double delta)
         {
-            // Update button states every frame
-            // Assuming Device ID 0 for the primary gamepad
             int deviceId = 0;
 
-            _sButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.A));       // South (A/Cross)
-            _eButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.B));       // East (B/Circle)
-            _nButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.X));       // West (X/Square) -> Wait, Unity's N(orth) is Y/Triangle. 
-                                                                                    // Unity InputSystem Gamepad:
-                                                                                    // North = Y (Triangle)
-                                                                                    // West = X (Square)
-                                                                                    // South = A (Cross)
-                                                                                    // East = B (Circle)
-            
-            // Godot JoyButton:
-            // A = 0 (Sony Cross, Xbox A) -> South
-            // B = 1 (Sony Circle, Xbox B) -> East
-            // X = 2 (Sony Square, Xbox X) -> West
-            // Y = 3 (Sony Triangle, Xbox Y) -> North
+            _sButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.A) || Input.IsKeyPressed(Key.Space) || Input.IsKeyPressed(Key.Enter));       // South (A/Cross)
+            _eButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.B) || Input.IsKeyPressed(Key.Shift));       // East (B/Circle)
+            _nButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.Y) || Input.IsKeyPressed(Key.C)); // North
+            _wButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.X) || Input.IsKeyPressed(Key.X)); // West
 
-            // Mapping correction based on standard layouts:
-            // Unity Sbutton (South) -> Godot A
-            // Unity Ebutton (East)  -> Godot B
-            // Unity Nbutton (North) -> Godot Y
-            // Unity Wbutton (West)  -> Godot X
+            _upButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.DpadUp) || Input.IsKeyPressed(Key.Pageup));
+            _downButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.DpadDown) || Input.IsKeyPressed(Key.Pagedown));
 
-            // Re-updating with correct mapping:
-             _nButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.Y)); // North
-             _wButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.X)); // West
-
-            _upButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.DpadUp));
-            _downButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.DpadDown));
+            _menuButton.Update(Input.IsJoyButtonPressed(deviceId, JoyButton.Start) || 
+                               Input.IsJoyButtonPressed(deviceId, JoyButton.Back) || 
+                               Input.IsKeyPressed(Key.Escape) || 
+                               Input.IsKeyPressed(Key.M) || 
+                               Input.IsKeyPressed(Key.Backspace));
         }
 
         public Vector2 GetLeftStickInput()
@@ -83,10 +72,23 @@ namespace hakoniwa.objects.core
             int deviceId = 0;
             float x = Input.GetJoyAxis(deviceId, JoyAxis.LeftX);
             float y = Input.GetJoyAxis(deviceId, JoyAxis.LeftY);
-            // Unity's Input System Vector2: Up is (0, 1).
-            // Godot's GetJoyAxis: Up is -1.
-            // So we negate Y to match Unity's convention.
-            return new Vector2(x, -y);
+
+            // Keyboard fallback
+            if (Math.Abs(x) < 0.1f)
+            {
+                if (Input.IsKeyPressed(Key.A)) x = -1.0f;
+                else if (Input.IsKeyPressed(Key.D)) x = 1.0f;
+            }
+            if (Math.Abs(y) < 0.1f)
+            {
+                if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.Up)) y = -1.0f;
+                else if (Input.IsKeyPressed(Key.S) || Input.IsKeyPressed(Key.Down)) y = 1.0f;
+            }
+
+            return new Vector2(
+                tuning.ApplyYaw(x),
+                tuning.Apply(y, tuning.ThrottleSensitivity) * -1.0f
+            );
         }
 
         public Vector2 GetRightStickInput()
@@ -94,7 +96,26 @@ namespace hakoniwa.objects.core
             int deviceId = 0;
             float x = Input.GetJoyAxis(deviceId, JoyAxis.RightX);
             float y = Input.GetJoyAxis(deviceId, JoyAxis.RightY);
-            return new Vector2(x, -y);
+
+            // Keyboard fallback
+            if (Math.Abs(x) < 0.1f)
+            {
+                if (Input.IsKeyPressed(Key.Left)) x = -1.0f;
+                else if (Input.IsKeyPressed(Key.Right)) x = 1.0f;
+            }
+            if (Math.Abs(y) < 0.1f)
+            {
+                if (Input.IsKeyPressed(Key.W) || Input.IsKeyPressed(Key.S))
+                {
+                    if (Input.IsKeyPressed(Key.Up)) y = -1.0f;
+                    else if (Input.IsKeyPressed(Key.Down)) y = 1.0f;
+                }
+            }
+
+            return new Vector2(
+                tuning.Apply(x, tuning.RollSensitivity),
+                tuning.Apply(y, tuning.PitchSensitivity) * -1.0f
+            );
         }
 
         public bool IsAButtonPressed() => _sButton.IsJustPressed;
@@ -103,17 +124,19 @@ namespace hakoniwa.objects.core
         public bool IsBButtonPressed() => _eButton.IsJustPressed;
         public bool IsBButtonReleased() => _eButton.IsJustReleased;
 
-        public bool IsXButtonPressed() => _nButton.IsJustPressed;
-        public bool IsXButtonReleased() => _nButton.IsJustReleased;
+        public bool IsXButtonPressed() => _wButton.IsJustPressed;
+        public bool IsXButtonReleased() => _wButton.IsJustReleased;
 
-        public bool IsYButtonPressed() => _wButton.IsJustPressed;
-        public bool IsYButtonReleased() => _wButton.IsJustReleased;
+        public bool IsYButtonPressed() => _nButton.IsJustPressed;
+        public bool IsYButtonReleased() => _nButton.IsJustReleased;
 
         public bool IsUpButtonPressed() => _upButton.IsJustPressed;
         public bool IsUpButtonReleased() => _upButton.IsJustReleased;
 
-        public bool IsDownButtonPressed() => _downButton.IsJustPressed;
+        public bool IsDownButtonPressed() => _downButton.IsJustReleased;
         public bool IsDownButtonReleased() => _downButton.IsJustReleased;
+
+        public bool IsMenuButtonPressed() => _menuButton.IsJustPressed;
 
         public void DoVibration(bool isRightHand, float frequency, float amplitude, float durationSec)
         {
@@ -121,7 +144,6 @@ namespace hakoniwa.objects.core
             float weakMagnitude = isRightHand ? 0.0f : amplitude;
             float strongMagnitude = isRightHand ? amplitude : 0.0f;
             
-            // Godot handles duration automatically
             Input.StartJoyVibration(deviceId, weakMagnitude, strongMagnitude, durationSec);
         }
     }

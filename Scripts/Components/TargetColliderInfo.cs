@@ -17,6 +17,16 @@ namespace hakoniwa.objects.core
             return null;
         }
 
+        /// <summary>★ 2026-10-04: 無ければ黙って null を返す（DroneCollision が毎フレーム引くので警告を出さない）。</summary>
+        public static TargetColliderInfo TryGetInfo(CollisionObject3D collider)
+        {
+            if (collider != null && colliderInfoMap.TryGetValue(collider, out TargetColliderInfo info))
+            {
+                return info;
+            }
+            return null;
+        }
+
         private static void PutInfo(CollisionObject3D collider, TargetColliderInfo obj)
         {
             colliderInfoMap[collider] = obj;

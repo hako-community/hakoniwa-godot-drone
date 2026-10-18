@@ -16,3 +16,14 @@
 # Case-variant duplicate strays of the tracked Ev3Pdu*.json (Ev3 vs EV3)
 /ros_types/json/ev3_msgs/EV3PduActuator.json
 /ros_types/json/ev3_msgs/EV3PduSensor.json
+
+# hakodrone (offline mode) fetched by tools/fetch_native.ps1 from native.lock.json
+/Plugins/Windows/x86_64/hakodrone.dll
+/Plugins/Windows/x86_64/mujoco.dll
+/Plugins/Windows/x86_64/hakodrone.h
+/Plugins/Windows/x86_64/manifest.json
+/Plugins/Windows/x86_64/LICENSE.md
+/Plugins/Windows/x86_64/LICENSE-*.txt
+/Plugins/Windows/x86_64/THIRD_PARTY_NOTICES-*.txt
+/Plugins/Windows/x86_64/.native.lock.*.json
+/SimModels/courses_drone/

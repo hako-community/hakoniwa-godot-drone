@@ -23,6 +23,7 @@ public partial class GameController : Node
 	public string pdu_name_cmd_game = "hako_cmd_game";
 	private string robotName;
 	private bool[] button_array = new bool[16];
+	private bool warnedNoPdu = false;
 
 	public bool GetGrabBaggageOn()
 	{
@@ -50,7 +51,7 @@ public partial class GameController : Node
 		GD.Print("GameController Initialize");
 		this.robotName = robot_name;
 		var ret = hakoPdu.DeclarePduForRead(robot_name, pdu_name_cmd_game);
-		if (ret == false)
+		if (ret == false && !OperatingSystem.IsAndroid())
 		{
 			throw new ArgumentException($"Can not declare pdu for read: {robotName} {pdu_name_cmd_game}");
 		}
@@ -59,12 +60,29 @@ public partial class GameController : Node
 	public void DoControl(IPduManager pduManager)
 	{
 		IPdu pdu_cmd_game_ctrl = pduManager.ReadPdu(robotName, pdu_name_cmd_game);
-		if (pdu_cmd_game_ctrl != null)
+		if (pdu_cmd_game_ctrl == null)
+		{
+			if (!warnedNoPdu)
+			{
+				GD.PrintErr($"[GameController] {robotName} の {pdu_name_cmd_game} が読めない");
+				warnedNoPdu = true;
+			}
+			return;
+		}
 		{
 			var cmd_game_ctrl = new hakoniwa.pdu.msgs.hako_msgs.GameControllerOperation(pdu_cmd_game_ctrl);
-			for (int i = 0; i < cmd_game_ctrl.button.Length; i++)
+			bool changed = false;
+			for (int i = 0; i < cmd_game_ctrl.button.Length && i < button_array.Length; i++)
 			{
+				if (button_array[i] != cmd_game_ctrl.button[i]) changed = true;
 				button_array[i] = cmd_game_ctrl.button[i];
+			}
+			// ★ 2026-10-04: 押されたボタンが変わったら 1 行出す（荷物・カメラが効かないときの切り分け用）
+			if (changed)
+			{
+				var on = new System.Collections.Generic.List<int>();
+				for (int i = 0; i < button_array.Length; i++) if (button_array[i]) on.Add(i);
+				GD.Print($"[GameController] buttons on=[{string.Join(",", on)}] radio_control={is_radio_control}");
 			}
 			if (button_array[DroneControlPdu.game_ops_arm_button_index])
 			{

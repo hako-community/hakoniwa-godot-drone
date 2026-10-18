@@ -512,6 +512,7 @@ environment = SubResource("Environment_am0b1")
 
 [node name="DroneTranspoter" type="Node3D" parent="." unique_id=2126820550 node_paths=PackedStringArray("body", "rd", "droneCollisionNode", "leds", "flight_mode_leds")]
 script = ExtResource("2_8ya32")
+enableOfflineMode = true
 body = NodePath("DroneTranspoter")
 rd = NodePath("RigidBody3D")
 droneCollisionNode = NodePath("RigidBody3D/CollisionShape3D")

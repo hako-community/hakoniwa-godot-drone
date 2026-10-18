@@ -34,9 +34,41 @@ namespace hakoniwa.sim.core.impl
             pduConfigPath = pdu_config_path;
             customJsonFilePath = custom_json_file_path;
         }
+        /// <summary>
+        /// ★ 2026-10-18: 箱庭（共有メモリのマスタ）が居るか（courses の 2026-10-04 の対策と同じ）。
+        /// 箱庭が居ないまま `asset_init` → `asset_register_polling` を呼ぶと、shakoc の中で 0xC0000005 で**落ちる**
+        /// （`asset_init` は「Not found hako-master」でも true を返す）。マスタは core_mmap_path に mmap-0xff.bin を作る。
+        /// 設定（HAKO_CONFIG_PATH）が読めなければ確かめようが無いので、従来どおり呼ぶ（true）。
+        /// </summary>
+        public static bool HakoniwaMasterExists(bool verbose = true)
+        {
+            try
+            {
+                string cfg = System.Environment.GetEnvironmentVariable("HAKO_CONFIG_PATH");
+                if (string.IsNullOrEmpty(cfg) || !System.IO.File.Exists(cfg)) return true;
+                string text = System.IO.File.ReadAllText(cfg);
+                var m = System.Text.RegularExpressions.Regex.Match(text, @"""core_mmap_path""\s*:\s*""([^""]*)""");
+                if (!m.Success) return true;
+                string dir = m.Groups[1].Value.Replace("\\\\", "\\");
+                bool exists = System.IO.File.Exists(System.IO.Path.Combine(dir, "mmap-0xff.bin"));
+                if (!exists && verbose) GD.Print($"HakoAssetImpl: 箱庭が居ない（{dir} に mmap-0xff.bin が無い）");
+                return exists;
+            }
+            catch (Exception ex)
+            {
+                if (verbose) GD.Print($"HakoAssetImpl: 箱庭の有無を確かめられない（{ex.Message}）→ 従来どおり繋ぎにいく");
+                return true;
+            }
+        }
+
         public bool Initialize(List<IHakoObject> list)
         {
             hakoObectList = list;
+            if (!HakoniwaMasterExists())
+            {
+                isReady = false;
+                return false;
+            }
             isReady = HakoCppWrapper.asset_init();
             if (isReady)
             {

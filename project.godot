@@ -23,6 +23,9 @@ config/icon="res://icon.svg"
 
 GameController="*res://Scripts/Hakoniwa/HakoSim/Drone/GameController.cs"
 AppController="*res://Scripts/AppController.cs"
+HakoDroneInputManager="*res://Scripts/Components/Input/HakoDroneInputManager.cs"
+HakoDroneXrInputManager="*res://Scripts/Components/Input/HakoDroneXrInputManager.cs"
+GamepadProbe="*res://Scripts/Components/Input/GamepadProbe.cs"
 
 [dotnet]
 

@@ -1,0 +1,14 @@
+{
+  "_about": "ビルドの前に tools/fetch_native.ps1 がこの版を取ってきて置く（.csproj の FetchNative）。版を上げるときは tag・version・sha256 を releases-channel の Release の値に書き換える。place の「フォルダ/」は zip の中の機体の定義（models/<機体>/）の置き場。",
+  "hakodrone": {
+    "repo": "hako-community/releases-channel",
+    "tag": "hakodrone-v1.3.0",
+    "version": "1.3.0",
+    "asset": "hakodrone-windows-x86_64.zip",
+    "sha256": "5766f66742bcb2e90b6f552560ca2234522f149de97a6f70ea48a7517d8483d8",
+    "dest": "Plugins/Windows/x86_64",
+    "place": {
+      "models/courses_drone/": "SimModels/courses_drone"
+    }
+  }
+}

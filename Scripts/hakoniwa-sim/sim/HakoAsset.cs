@@ -27,6 +27,17 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
     public long WorldTime => _worldTime;
 
     private bool isReady = false;
+    public bool IsReady => isReady;
+
+    // ★ 2026-10-18: 箱庭との繋がりの状態。DroneAvatar はこれを見て、オンライン（箱庭経由）かオフライン（hakodrone）かを決める。
+    public enum ConnectionState { Waiting, Connecting, Ready, Failed, Cancelled }
+    public ConnectionState Connection { get; private set; } = ConnectionState.Waiting;
+
+    // オフラインで動き始めた場面が呼ぶ。プラントを待つのをやめる（あとから来た箱庭には繋がない）。
+    public void CancelWaitForPlant()
+    {
+        if (Connection == ConnectionState.Waiting) Connection = ConnectionState.Cancelled;
+    }
     
     private IHakoAsset hakoAsset;
     private IHakoCommand hakoCommand;
@@ -94,6 +105,7 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         if (!HakoAssetIsValid(hakoObectList))
         {
             GD.PrintErr("Invalid HakoAssets");
+            Connection = ConnectionState.Failed;
             return;
         }
 
@@ -107,6 +119,30 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
             GD.Print($"[HakoAsset] HAKO_PDU_CONFIG override -> {customJsonFilePath}");
         }
 
+        // ★ 2026-10-18: 箱庭（プラント）が居ないまま shakoc を呼ぶと落ちる（HakoAssetImpl.HakoniwaMasterExists）。
+        //   プラントが立つまで待って、立ったら自動で繋ぐ。オフラインで動く場面（DroneAvatar.enableOfflineMode）は
+        //   待つのをやめさせる（CancelWaitForPlant）。
+        if (!HakoAssetImpl.HakoniwaMasterExists())
+        {
+            GD.Print("[HakoAsset] 箱庭（プラント）を待っています。プラントを起動すると自動で繋がります");
+            while (!HakoAssetImpl.HakoniwaMasterExists(false))
+            {
+                await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+                if (!IsInsideTree()) return;
+                if (Connection == ConnectionState.Cancelled)
+                {
+                    GD.Print("[HakoAsset] オフラインで動くので、箱庭は待ちません");
+                    return;
+                }
+            }
+            // マスタが共有メモリを作り終えるのを少し待つ
+            await ToSignal(GetTree().CreateTimer(1.0), SceneTreeTimer.SignalName.Timeout);
+            if (!IsInsideTree()) return;
+            if (Connection == ConnectionState.Cancelled) return;
+            GD.Print("[HakoAsset] 箱庭が起動したので繋ぎます");
+        }
+        Connection = ConnectionState.Connecting;
+
         long delta_time = 1000; // 1ms
         hakoAsset = new HakoAssetImpl(assetName, delta_time, pduConfigPath, customJsonFilePath);
         hakoCommand = (IHakoCommand)hakoAsset;
@@ -119,10 +155,17 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
             {
                 GD.Print("OK: Register on Hakoniwa: " + assetName);
                 isReady = true;
+                Connection = ConnectionState.Ready;
             }
             else
             {
-                GD.PrintErr("Can not register on Hakoniwa: " + assetName);
+                // ★ 2026-10-18: 登録できないまま EventInitialize を呼ぶと、PDU を宣言できずに例外になる（DroneAvatar）。
+                //   前のプラントの共有メモリが残っている（強制終了など）か、箱庭が START 済みで新しい登録を受け付けないとき。
+                //   オフラインに切り替えられる場面はローカル（hakodrone）で動く。
+                GD.PrintErr("Can not register on Hakoniwa: " + assetName +
+                            "（箱庭で動かすなら、プラントを起動し直してから、この場面も開き直してください）");
+                Connection = ConnectionState.Failed;
+                return;
             }
             foreach (var ihako in hakoObectList)
             {
@@ -132,6 +175,7 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         else
         {
             GD.PrintErr("Can not Initialize Hakoniwa: " + assetName);
+            Connection = ConnectionState.Failed;
         }
     }
 
@@ -198,10 +242,14 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         return srv.DeclarePduForRead(robotName, pduName, channel_id, pdu_size);
     }
 
-    public long GetWorldTime() => hakoCommand.GetWorldTime();
+    // ★ 2026-10-18: 箱庭に登録できるまで（プラント待ちの間も）は shakoc を呼ばない。
+    //   GUI（SimStart・SimTime）は毎フレーム呼ぶので、hakoCommand が無い間に NullReferenceException になっていた。
+    //   Terminated を返すと SimStart は START ボタンを押せなくする。
+    public long GetWorldTime() => isReady ? hakoCommand.GetWorldTime() : 0;
 
     public HakoSimState GetState()
     {
+        if (!isReady) return HakoSimState.Terminated;
         SimulationState state = hakoCommand.GetState();
         switch (state)
         {
@@ -214,7 +262,7 @@ public partial class HakoAsset: Node, IHakoPdu, IHakoControl
         }
     }
 
-    public bool SimulationStart() => hakoCommand.SimulationStart();
-    public bool SimulationStop() => hakoCommand.SimulationStop();
-    public bool SimulationReset() => hakoCommand.SimulationReset();
+    public bool SimulationStart() => isReady && hakoCommand.SimulationStart();
+    public bool SimulationStop() => isReady && hakoCommand.SimulationStop();
+    public bool SimulationReset() => isReady && hakoCommand.SimulationReset();
 }

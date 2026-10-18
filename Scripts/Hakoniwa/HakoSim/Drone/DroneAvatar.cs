@@ -18,6 +18,23 @@ namespace hakoniwa.drone.sim
         [Export]
         public string robotName = "Drone";
 
+        // ★ 2026-10-18: 箱庭（プラント）が居なければ、Godot の中の hakodrone（内蔵 FC ＋ MuJoCo）で飛ばす
+        //   （hakoniwa-godot-drone-courses のオフライン経路を移したもの）。機体は courses_drone（Origin-01 相当の 4 発）
+        //   なので、Origin-01 1 機の場面だけで有効にする。無効の場面は箱庭が立つまで待って繋ぐ（HakoAsset）。
+        [Export]
+        public bool enableOfflineMode = false;
+        private bool isOfflineMode = false;
+        private bool isInitialized = false;
+        private DroneControl localDroneControl = null;
+        private double offlineTimer = 0;
+        private float offline_last_propeller_rotation = 0f;
+        private double offline_c1, offline_c2, offline_c3, offline_c4, offline_c5, offline_c6, offline_c7, offline_c8;
+        private int offline_internal_state = 0;
+        private int offline_flight_mode = 0;
+        private hakoniwa.drone.service.DroneServiceRC.BatteryStatus offline_battery_status;
+        private ICameraController offlineCameraController;
+        private Godot.Vector3 lastPosition = Godot.Vector3.Zero;
+
         [ExportGroup("PDU Names")]
         [Export]
         public string pdu_name_propeller = "motor";
@@ -538,6 +555,13 @@ namespace hakoniwa.drone.sim
             {
                 initialScale = this.Scale;
             }
+            // ★ 2026-10-18: 箱庭（プラント）を待つ間は EventInitialize が呼ばれないので、ここでも固定しておく。
+            //   固定しないと RigidBody3D だけが重力で落ち、繋がったあと当たり判定が機体からずれる。
+            if (rd != null)
+            {
+                rd.Freeze = true;
+                rd.FreezeMode = RigidBody3D.FreezeModeEnum.Kinematic;
+            }
         }
 
         private void UpdatePosition(Twist pos)
@@ -578,11 +602,216 @@ namespace hakoniwa.drone.sim
             }
         }
 
-        public double get_full_voltage() => battery_status?.full_voltage ?? 0;
-        public double get_curr_voltage() => battery_status?.curr_voltage ?? 0;
-        public uint get_status() => battery_status?.status ?? 0;
-        public uint get_cycles() => battery_status?.cycles ?? 0;
-        public double get_temperature() => battery_status?.curr_temp ?? 0;
+        public double get_full_voltage() => isOfflineMode ? offline_battery_status.FullVoltage : (battery_status?.full_voltage ?? 0);
+        public double get_curr_voltage() => isOfflineMode ? offline_battery_status.CurrentVoltage : (battery_status?.curr_voltage ?? 0);
+        public uint get_status() => isOfflineMode ? offline_battery_status.Status : (battery_status?.status ?? 0);
+        public uint get_cycles() => isOfflineMode ? offline_battery_status.ChargeCycles : (battery_status?.cycles ?? 0);
+        public double get_temperature() => isOfflineMode ? offline_battery_status.CurrentTemperature : (battery_status?.curr_temp ?? 0);
+
+        public override void _PhysicsProcess(double delta)
+        {
+            if (!isInitialized)
+            {
+                offlineTimer += delta;
+                if (offlineTimer < 0.5) return;
+
+                // 箱庭が居るかは HakoAsset が決める（mmap-0xff.bin の有無と登録の結果）。繋ぎにいっている間は待つ。
+                var asset = HakoAsset.Instance;
+                var state = asset?.Connection ?? HakoAsset.ConnectionState.Failed;
+                if (state == HakoAsset.ConnectionState.Connecting) return;
+                isInitialized = true;
+                if (state == HakoAsset.ConnectionState.Ready) return;   // オンライン（箱庭経由）
+                if (enableOfflineMode && StartOfflineMode())
+                {
+                    asset?.CancelWaitForPlant();   // オフラインで動くので、あとから来た箱庭には繋がない
+                }
+            }
+
+            if (isOfflineMode)
+            {
+                UpdateOfflineSimulation();
+            }
+        }
+
+        private void ResolveComponentsForOffline()
+        {
+            drone_propeller = NodeUtil.FindNodeByInterface<DronePropeller>(this);
+            drone_collision = droneCollisionNode as DroneCollision;
+            touchSensor = NodeUtil.FindNodeByInterface<TouchSensor>(this);
+            gameController = GameController.Instance ?? NodeUtil.FindNodeByInterface<GameController>(this);
+            cameraController = NodeUtil.FindNodeByInterface<CameraController>(this);
+            // カメラの上下は ICameraController そのものに渡す（CameraController は中の制御を外に出さない）
+            offlineCameraController = NodeUtil.FindNodeByInterface<ICameraController>(this);
+            baggageGrabber = NodeUtil.FindNodeByInterface<BaggageGrabber>(this);
+            droneConfig = NodeUtil.FindNodeByInterface<DroneConfig>(this);
+            lidars = FindComponents<ILiDAR3DController>();
+            wind = NodeUtil.FindNodeByInterface<Wind>(this);
+            if (drone_collision != null)
+            {
+                drone_collision.SetIndex(0);
+            }
+            if (drone_propeller == null)
+            {
+                GD.PrintErr("DroneAvatar Error: DronePropeller not found for offline mode!");
+            }
+        }
+
+        // hakodrone を開けたら true。開けなければ（DLL や機体の定義が無いなど）オフラインにしない。
+        private bool StartOfflineMode()
+        {
+            GD.Print("DroneAvatar: 箱庭が居ないので、hakodrone（res://SimModels/courses_drone）でローカルに動かします");
+            int ret;
+            try
+            {
+                ret = hakoniwa.drone.service.DroneServiceRC.Open();
+            }
+            catch (Exception e)
+            {
+                GD.PrintErr($"DroneAvatar: hakodrone を開けない（{e.Message}）。tools/fetch_native.ps1 で取得したか確かめること");
+                return false;
+            }
+            if (ret != 0)
+            {
+                GD.PrintErr($"DroneAvatar: hakodrone を開けない（Open ret = {ret}）");
+                return false;
+            }
+            hakoniwa.drone.service.DroneServiceRC.Start();
+            isOfflineMode = true;
+
+            ResolveComponentsForOffline();
+
+            localDroneControl = NodeUtil.FindNodeByInterface<DroneControl>(this);
+            if (localDroneControl == null)
+            {
+                var droneControlNode = new DroneControl();
+                droneControlNode.Name = "DroneControl";
+                droneControlNode.robotName = this.robotName;
+                var xrInterface = XRServer.FindInterface("OpenXR");
+                bool isXrActive = (xrInterface != null && xrInterface.IsInitialized()) || OS.GetName() == "Android" || HakoDroneXrInputManager.Instance != null;
+                droneControlNode.input_type = isXrActive ? DroneControlInputType.Xr : DroneControlInputType.PS4;
+                droneControlNode.isPlayer = true;
+                AddChild(droneControlNode);
+                localDroneControl = droneControlNode;
+            }
+
+            if (rd != null)
+            {
+                rd.Freeze = true;
+            }
+            return true;
+        }
+
+        private void UpdateOfflineSimulation()
+        {
+            if (localDroneControl != null)
+            {
+                localDroneControl.HandleInput();
+                // カメラの上下（PDU は無いので null。Y の撮影は動かない）。UpdateCameraAngle がカメラを機体に付けて動かす
+                if (offlineCameraController != null)
+                {
+                    localDroneControl.HandleCameraControl(offlineCameraController, null);
+                    offlineCameraController.UpdateCameraAngle();
+                }
+            }
+
+            // オフラインでも当たり判定を効かせる（オンラインは impulse PDU でプラントが同じ式を解く）
+            if (drone_collision != null)
+            {
+                var col = drone_collision.GetImpulseCollision();
+                if (col.collision)
+                {
+                    hakoniwa.drone.service.DroneServiceRC.ApplyContact(0, col);
+                }
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+                hakoniwa.drone.service.DroneServiceRC.Run();
+            }
+
+            double x, y, z;
+            int ret = hakoniwa.drone.service.DroneServiceRC.GetPosition(0, out x, out y, out z);
+            if (ret == 0)
+            {
+                Godot.Vector3 unity_pos = new Godot.Vector3(-(float)y, (float)z, -(float)x);
+                double roll, pitch, yaw;
+                ret = hakoniwa.drone.service.DroneServiceRC.GetAttitude(0, out roll, out pitch, out yaw);
+                if (ret == 0)
+                {
+                    var qRoll  = Godot.Quaternion.FromEuler(new Godot.Vector3(0, 0, -(float)roll));
+                    var qPitch = Godot.Quaternion.FromEuler(new Godot.Vector3(-(float)pitch, 0, 0));
+                    var qYaw   = Godot.Quaternion.FromEuler(new Godot.Vector3(0, (float)yaw, 0));
+                    Godot.Quaternion targetRotation = qYaw * qPitch * qRoll;
+
+                    this.GlobalPosition = unity_pos;
+                    this.GlobalBasis = new Basis(targetRotation).Scaled(initialScale);
+
+                    // 当たり判定の体を機体に合わせる（物理のスレッドにも直接入れる）
+                    if (rd != null && GodotObject.IsInstanceValid(rd))
+                    {
+                        var targetTransform = new Transform3D(new Basis(targetRotation), this.GlobalPosition);
+                        rd.GlobalTransform = targetTransform;
+                        PhysicsServer3D.BodySetState(rd.GetRid(), PhysicsServer3D.BodyState.Transform, targetTransform);
+                        rd.Sleeping = false;
+                        float delta = (float)GetProcessDeltaTime();
+                        if (delta > 0.0001f)
+                        {
+                            Godot.Vector3 velocity = (this.GlobalPosition - lastPosition) / delta;
+                            rd.LinearVelocity = velocity;
+                            PhysicsServer3D.BodySetState(rd.GetRid(), PhysicsServer3D.BodyState.LinearVelocity, velocity);
+                        }
+                        lastPosition = this.GlobalPosition;
+                    }
+                }
+            }
+
+            if (drone_propeller != null)
+            {
+                ret = hakoniwa.drone.service.DroneServiceRC.GetControls(
+                    0,
+                    out offline_c1, out offline_c2, out offline_c3, out offline_c4,
+                    out offline_c5, out offline_c6, out offline_c7, out offline_c8);
+                if (ret == 0)
+                {
+                    drone_propeller.Rotate((float)offline_c1, (float)offline_c2, (float)offline_c3, (float)offline_c4);
+                    offline_last_propeller_rotation = (float)offline_c1;
+                }
+            }
+
+            if (useBattery)
+            {
+                hakoniwa.drone.service.DroneServiceRC.TryGetBatteryStatus(0, out offline_battery_status);
+            }
+            hakoniwa.drone.service.DroneServiceRC.GetInternalState(0, out offline_internal_state);
+            hakoniwa.drone.service.DroneServiceRC.GetFlightMode(0, out offline_flight_mode);
+
+            if (leds.Length > 0)
+            {
+                foreach (var led in leds)
+                {
+                    if (offline_last_propeller_rotation <= 0.01f) { led.SetMode(DroneLedController.DroneMode.DISARM); continue; }
+                    switch (offline_internal_state)
+                    {
+                        case 0: led.SetMode(DroneLedController.DroneMode.TAKEOFF); break;
+                        case 1: led.SetMode(DroneLedController.DroneMode.HOVER); break;
+                        case 2: led.SetMode(DroneLedController.DroneMode.LANDING); break;
+                        default: led.SetMode(DroneLedController.DroneMode.DISARM); break;
+                    }
+                }
+            }
+            if (flight_mode_leds.Length > 0)
+            {
+                foreach (var led in flight_mode_leds) led.SetMode(offline_flight_mode == 0 ? FlightModeLedController.FlightMode.ATTI : FlightModeLedController.FlightMode.GPS);
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            if (isOfflineMode)
+            {
+                hakoniwa.drone.service.DroneServiceRC.Stop();
+            }
+        }
 
         Godot.Vector3 IMovableObject.GetPosition() => body?.GlobalPosition ?? GlobalPosition;
         Godot.Vector3 IMovableObject.GetEulerDeg() => body?.GlobalRotationDegrees ?? GlobalRotationDegrees;
@@ -601,14 +830,15 @@ namespace hakoniwa.drone.sim
 
         public bool IsArmed()
         {
+            float rot = GetPropellerRotation();
             // デモモードや未初期化状態（PDUデータがまだ来ていない）
-            if (current_propeller_rotation < 0f) {
+            if (rot < 0f) {
                 return true;
             }
-            return current_propeller_rotation > 0.01f;
+            return rot > 0.01f;
         }
 
-        public float GetPropellerRotation() => current_propeller_rotation;
-        public int GetInternalState() => current_internal_state;
+        public float GetPropellerRotation() => isOfflineMode ? offline_last_propeller_rotation : current_propeller_rotation;
+        public int GetInternalState() => isOfflineMode ? offline_internal_state : current_internal_state;
     }
 }

@@ -39,7 +39,8 @@ namespace hakoniwa.objects.core
         public bool IsDownButtonPressed();
         public bool IsDownButtonReleased();
 
+        public bool IsMenuButtonPressed() => false;
+
         void DoVibration(bool isRightHand, float frequency, float amplitude, float durationSec);
     }
 }
-

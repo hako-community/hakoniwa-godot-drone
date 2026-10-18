@@ -93,8 +93,9 @@ hakoniwa-godot-drone/
 | そのほか（`drone3_hako`・`planet_*`・`deltaquad_hako`・`vtol_quadplane_hako`・`two_drone_avoid`） | 箱庭経由で動く | プラントが立つのを待ち、立ったら自動で繋がる |
 
 * どちらで動くかは、場面の `DroneAvatar` の `enableOfflineMode` で決まります（hakodrone で配っている機体に合う、Origin-01 1 機の場面だけ有効）。
-* 箱庭が居るかは、共有メモリの `mmap-0xff.bin`（`HAKO_CONFIG_PATH` の `core_mmap_path`）で判断します。
-  箱庭が居ないまま箱庭コア（shakoc）を呼ぶと落ちるため、呼ぶ前に確かめています。
+* 箱庭が居るかは、共有メモリの `mmap-0xff.bin`（`HAKO_CONFIG_PATH` の `core_mmap_path`）と、そこに書かれたマスタの PID が動いているかで判断します。
+  箱庭が居ないまま箱庭コア（shakoc）を呼ぶと落ちるため、呼ぶ前に確かめています。プラントを強制終了して共有メモリが残っていても、ローカルで動きます。
+* ローカルのときの物理は `courses_drone`（約 0.68 kg・ローター ±0.25 m の小型機。courses と同じ手ごたえ）です。見た目は Origin-01 の実寸（ローター ±0.84 m）なので、大きさ・重さの感じは見た目と一致しません。
 
 ### 1.2 内蔵 FC（hakodrone.dll）の取得（Windows）
 

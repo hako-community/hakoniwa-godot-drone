@@ -50,14 +50,64 @@ namespace hakoniwa.sim.core.impl
                 var m = System.Text.RegularExpressions.Regex.Match(text, @"""core_mmap_path""\s*:\s*""([^""]*)""");
                 if (!m.Success) return true;
                 string dir = m.Groups[1].Value.Replace("\\\\", "\\");
-                bool exists = System.IO.File.Exists(System.IO.Path.Combine(dir, "mmap-0xff.bin"));
+                string path = System.IO.Path.Combine(dir, "mmap-0xff.bin");
+                bool exists = System.IO.File.Exists(path);
                 if (!exists && verbose) GD.Print($"HakoAssetImpl: 箱庭が居ない（{dir} に mmap-0xff.bin が無い）");
-                return exists;
+                if (!exists) return false;
+                // ★ 2026-10-18: プラントが強制終了されると mmap-0xff.bin が残る。そのときは登録まで成功してしまい、
+                // 来ない START をずっと待つ（オフラインにもならない）。hako-cmd の probe_runtime と同じく、
+                // ファイルに書かれたマスタの PID が生きているかで確かめる。
+                int pid = ReadMasterPid(path);
+                if (pid > 0 && !IsProcessAlive(pid))
+                {
+                    if (verbose) GD.Print($"HakoAssetImpl: 箱庭が居ない（{path} は前のプラントの残り。マスタ pid={pid} は動いていない）");
+                    return false;
+                }
+                return true;
             }
             catch (Exception ex)
             {
                 if (verbose) GD.Print($"HakoAssetImpl: 箱庭の有無を確かめられない（{ex.Message}）→ 従来どおり繋ぎにいく");
                 return true;
+            }
+        }
+
+        // mmap-0xff.bin の頭（SharedMemoryMetaDataType: magic・version・shm_id・sem_id・data_size の 24 バイト）の次が
+        // HakoMasterDataType で、その先頭が master_pid（4 バイト）。形が違えば確かめられないので 0 を返す。
+        private const uint HakoShmMagic = 0x48414B4F;
+        private const uint HakoShmLayoutVersion = 2;
+        private const int MasterPidOffset = 24;
+
+        private static int ReadMasterPid(string path)
+        {
+            try
+            {
+                using var fs = new System.IO.FileStream(path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite | System.IO.FileShare.Delete);
+                var buf = new byte[MasterPidOffset + 4];
+                if (fs.Read(buf, 0, buf.Length) != buf.Length) return 0;
+                if (BitConverter.ToUInt32(buf, 0) != HakoShmMagic || BitConverter.ToUInt32(buf, 4) != HakoShmLayoutVersion) return 0;
+                return BitConverter.ToInt32(buf, MasterPidOffset);
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        private static bool IsProcessAlive(int pid)
+        {
+            try
+            {
+                using var p = System.Diagnostics.Process.GetProcessById(pid);
+                return !p.HasExited;
+            }
+            catch (ArgumentException)
+            {
+                return false;   // その PID のプロセスは無い
+            }
+            catch (Exception)
+            {
+                return true;    // 権限などで確かめられない（hako-cmd も生きているとみなす）
             }
         }
 

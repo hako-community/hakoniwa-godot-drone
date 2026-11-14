@@ -16,6 +16,7 @@
     { "<名前>": { "repo": "...", "tag": "...", "version": "1.0.0", "asset": "...zip", "sha256": "...",
                   "dest": "Plugins/Windows/x86_64", "place": { "<ファイル名>": "<置き場>" } } }
   "_" で始まる名前は注記として読み飛ばす。
+  "os"（"windows" ／ "linux"。無ければ "windows"）が windows でない項目は読み飛ばす（Linux は tools/fetch_native.sh）。
   place には「フォルダ/」も書ける（例 "models/hula/": "SimModels/edu/hula"）。zip の中のそのフォルダの下を指定の場所へ置く。
   どの place にも当たらない zip の中のフォルダは置かない（要る機体だけを取る）。
 
@@ -73,6 +74,8 @@ foreach ($prop in $lock.PSObject.Properties) {
     $name = $prop.Name
     if ($name.StartsWith('_')) { continue }
     $e = $prop.Value
+    # "os" はどの OS 向けか（無ければ windows）。ほかの OS の項目は tools/fetch_native.sh が扱う
+    if ($e.PSObject.Properties.Name -contains 'os' -and $e.os -and $e.os -ne 'windows') { continue }
     foreach ($k in 'repo', 'tag', 'asset', 'sha256', 'dest') {
         if (-not ($e.PSObject.Properties.Name -contains $k) -or -not $e.$k) { Stop-Fetch "$name に $k が無い（$lockPath）" }
     }

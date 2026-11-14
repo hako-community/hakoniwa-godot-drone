@@ -13,4 +13,8 @@
   <Target Name="FetchNative" BeforeTargets="BeforeBuild" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\fetch_native.ps1&quot;" />
   </Target>
+  <!-- Linux: the same lock entries marked "os": "linux" (libhakodrone.so, libmujoco.so.3.9.0) through tools/fetch_native.sh. -->
+  <Target Name="FetchNativeLinux" BeforeTargets="BeforeBuild" Condition="'$(OS)' != 'Windows_NT' And $([MSBuild]::IsOSPlatform('Linux'))">
+    <Exec Command="bash &quot;$(MSBuildProjectDirectory)/tools/fetch_native.sh&quot;" />
+  </Target>
 </Project>

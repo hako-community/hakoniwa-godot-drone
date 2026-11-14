@@ -26,4 +26,14 @@
 /Plugins/Windows/x86_64/LICENSE-*.txt
 /Plugins/Windows/x86_64/THIRD_PARTY_NOTICES-*.txt
 /Plugins/Windows/x86_64/.native.lock.*.json
+# Linux: the same set fetched by tools/fetch_native.sh ("os": "linux" in native.lock.json).
+# ★ libshakoc.so is tracked (the bundled Hakoniwa core, same version as the local SDK)
+/Plugins/Linux/x86_64/libhakodrone.so
+/Plugins/Linux/x86_64/libmujoco.so*
+/Plugins/Linux/x86_64/hakodrone.h
+/Plugins/Linux/x86_64/manifest.json
+/Plugins/Linux/x86_64/LICENSE.md
+/Plugins/Linux/x86_64/LICENSE-*.txt
+/Plugins/Linux/x86_64/THIRD_PARTY_NOTICES-*.txt
+/Plugins/Linux/x86_64/.native.lock.*.json
 /SimModels/courses_drone/

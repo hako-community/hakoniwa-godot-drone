@@ -1,0 +1,3 @@
+# Linux の bash で動かす台本は LF に固定する（CRLF だと「command not found」で止まる）
+*.sh text eol=lf
+*.bash text eol=lf

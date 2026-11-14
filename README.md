@@ -108,6 +108,22 @@ hakoniwa-godot-drone/
 * 取らずに建てるとき（認証の無い CI など）: 環境変数 `HAKO_SKIP_FETCH_NATIVE=1`（箱庭経由だけで使えます）
 * 開発中の hakodrone.dll を試すときは、環境変数 `HAKO_NATIVE_LIB_DIR` に hakodrone.dll のあるフォルダを指定します
 
+### 1.3 内蔵 FC（libhakodrone.so）の取得と起動（Linux・2026-11-14〜）
+
+Linux では `native.lock.json` の `"os": "linux"` の項目（`hakodrone-linux-x86_64.zip`）を、ビルドのとき（`dotnet build`）に
+`tools/fetch_native.sh` が同じ releases-channel から取ってきて `Plugins/Linux/x86_64/` に置きます（`libhakodrone.so` と `libmujoco.so.3.9.0` は組で置く）。
+
+```bash
+sudo apt install gh && gh auth login            # 初回だけ（releases-channel を読む権限）
+export DOTNET_ROOT=$HOME/.dotnet                # Godot mono が .NET 8 を探す場所（無いと起動時に落ちる）
+dotnet build hakoniwa_1.csproj                  # → tools/fetch_native.sh
+$GODOT_BIN --path . res://Scenes/drone_1.tscn   # 箱庭が居なければローカル（内蔵 FC）で動く
+```
+
+* 箱庭（プラント）と繋ぐときは、hakoniwa-mujoco-drone の `tools/local_sdk/env_linux.bash` を読んだシェルから起動します
+  （`HAKO_NATIVE_LIB_DIR` がローカル SDK の `libshakoc.so` を指す。同梱の `Plugins/Linux/x86_64/libshakoc.so` もローカル SDK と同じ箱庭コア）。
+* 全体を 1 本で建てるときは hakoniwa-mujoco-runtime の `tools/linux/setup_workspace.sh --drone --godot`（`docs/START_HERE_linux.md`）。
+
 ### 2. 箱庭外部制御 / シミュレーション連携
 
 箱庭コンダクタや外部コントローラ（PX4 / ROS 2 / Python API 等）と通信連携して実行する場合は、箱庭の標準ワークフローに従ってコンダクタを起動後に Godot 側の「START」ボタンを押下してシミュレーションを開始します。
